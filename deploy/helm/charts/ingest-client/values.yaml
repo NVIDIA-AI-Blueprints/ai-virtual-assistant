@@ -26,7 +26,7 @@ applicationSpecs:
         - --host
         - 0.0.0.0
         image:
-          repository: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client
+          repository: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client
           tag: "1.1.0"
         ports:
         - containerPort: 9001
@@ -40,7 +40,7 @@ applicationSpecs:
         \ ; do\n  echo \"Waiting for all APIs to be healthy...\"\n  sleep 10\ndone\n\
         echo \"Grace time for all services to be ready after health check passes..\"\
         \nsleep 30\n"
-      image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+      image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
       imagePullPolicy: IfNotPresent
       name: init-check
     - args:
@@ -51,7 +51,7 @@ applicationSpecs:
       - $egress.postgres.port
       command:
       - python3
-      image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+      image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
       imagePullPolicy: IfNotPresent
       name: ingest-csv-to-postgres
     - args:
@@ -62,7 +62,7 @@ applicationSpecs:
       - $egress.chain-server-canonical.port
       command:
       - python3
-      image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+      image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
       imagePullPolicy: IfNotPresent
       name: ingest-pdf-to-canonical
     services:

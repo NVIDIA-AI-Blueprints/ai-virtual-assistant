@@ -19,7 +19,7 @@ applicationSpecs:
     initContainers:
     - name: init-check
       imagePullPolicy: IfNotPresent
-      image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+      image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
       command:
       - /bin/bash
       - -c
@@ -47,7 +47,7 @@ applicationSpecs:
         - name: REQUEST_TIMEOUT
           value: "180"
         image:
-          repository: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-api-gateway
+          repository: nvcr.io/nvidia/blueprint/aiva-customer-service-api-gateway
           tag: "1.1.0"
         ports:
         - containerPort: 9000

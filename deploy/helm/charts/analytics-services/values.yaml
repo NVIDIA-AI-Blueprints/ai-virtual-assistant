@@ -54,7 +54,7 @@ applicationSpecs:
           value: INFO
         image:
           pullPolicy: IfNotPresent
-          repository: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-analytics
+          repository: nvcr.io/nvidia/blueprint/aiva-customer-service-analytics
           tag: 1.1.0
         ports:
         - containerPort: 8081

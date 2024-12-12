@@ -19,7 +19,7 @@ applicationSpecs:
     initContainers:
     - name: init-check
       imagePullPolicy: IfNotPresent
-      image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+      image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
       command:
       - /bin/bash
       - -c
@@ -79,7 +79,7 @@ applicationSpecs:
           value: INFO
         image:
           pullPolicy: IfNotPresent
-          repository: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-structured-retriever
+          repository: nvcr.io/nvidia/blueprint/aiva-customer-service-structured-retriever
           tag: 1.1.0
         ports:
         - containerPort: 8081

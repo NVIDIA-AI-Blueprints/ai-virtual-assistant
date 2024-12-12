@@ -9,14 +9,14 @@
 replicaCount: 1
 
 image:
-  repository: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ui
+  repository: nvcr.io/nvidia/blueprint/aiva-customer-service-ui
   pullPolicy: IfNotPresent
   tag: "1.1.0"
 
 initContainers:
 - name: init-check
   imagePullPolicy: IfNotPresent
-  image: nvcr.io/goirlvsxnepa/blueprints/aiva-customer-service-ingest-client:1.1.0
+  image: nvcr.io/nvidia/blueprint/aiva-customer-service-ingest-client:1.1.0
   command:
   - /bin/bash
   - -c
