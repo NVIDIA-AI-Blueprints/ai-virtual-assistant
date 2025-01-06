@@ -52,10 +52,6 @@ services:
       LOGLEVEL: ${LOGLEVEL:-INFO}
       # Set the default expiration time (TTL) for Redis keys (in seconds)
       REDIS_SESSION_EXPIRY: 12 # in hours
-      LANGCHAIN_ENDPOINT: "https://api.smith.langchain.com"
-      LANGCHAIN_API_KEY: "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"
-      LANGCHAIN_PROJECT: "agent-run"
-      LANGCHAIN_TRACING_V2: true
     ports:
     - "8081:8081"
     expose:
@@ -357,7 +353,7 @@ services:
 
   milvus:
     container_name: milvus-standalone
-    image: milvusdb/milvus:v2.4.15
+    image: milvusdb/milvus:v2.4.15-gpu
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -379,7 +375,13 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: ["gpu"]
+              device_ids: ['${VECTORSTORE_GPU_DEVICE_ID:-0}']
 
 networks:
   default:
