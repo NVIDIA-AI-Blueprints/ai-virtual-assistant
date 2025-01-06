@@ -16,7 +16,8 @@ services:
     command: --port 8081 --host 0.0.0.0 --workers 1 --loop asyncio
     environment:
       EXAMPLE_PATH: './src/agent'
-      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      #APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-""}
       # Cache name to store user conversation
@@ -43,13 +44,18 @@ services:
       STRUCTURED_RAG_URI: http://structured-retriever:8081
       NVIDIA_API_KEY: ${NVIDIA_API_KEY}
       GRAPH_RECURSION_LIMIT: 20
-      GRAPH_TIMEOUT_IN_SEC: 20
+      GRAPH_TIMEOUT_IN_SEC: 50        # meta/llama-3.1-405b-instruct
+      #GRAPH_TIMEOUT_IN_SEC: 20       # meta/llama-3.1-70b-instruct
       RETURN_WINDOW_CURRENT_DATE: '2024-10-23' # Leave it empty to get the current date
       RETURN_WINDOW_THRESHOLD_DAYS: 30
       # Log level for server, supported level NOTSET, DEBUG, INFO, WARN, ERROR, CRITICAL
       LOGLEVEL: ${LOGLEVEL:-INFO}
       # Set the default expiration time (TTL) for Redis keys (in seconds)
       REDIS_SESSION_EXPIRY: 12 # in hours
+      LANGCHAIN_ENDPOINT: "https://api.smith.langchain.com"
+      LANGCHAIN_API_KEY: "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"
+      LANGCHAIN_PROJECT: "agent-run"
+      LANGCHAIN_TRACING_V2: true
     ports:
     - "8081:8081"
     expose:
@@ -76,7 +82,8 @@ services:
     environment:
       AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://agent-chain-server:8081}
       ANALYTICS_SERVER_URL: ${ANALYTICS_SERVER_URL:-http://analytics-server:8081}
-      REQUEST_TIMEOUT: 320
+      REQUEST_TIMEOUT: 800   # meta/llama-3.1-405b-instruct
+      #REQUEST_TIMEOUT: 320  # meta/llama-3.1-70b-instruct
     restart: unless-stopped  # Optional: Automatically restart the container unless it is stopped
     depends_on:
     - agent-chain-server
@@ -105,7 +112,8 @@ services:
     command: --port 8081 --host 0.0.0.0 --workers 1
     environment:
       EXAMPLE_PATH: './src/analytics'
-      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      #APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-""}
       # Database name to store user conversation/summary
@@ -157,7 +165,8 @@ services:
       # Type of vectordb used to store embedding supported type milvus, pgvector
       APP_VECTORSTORE_NAME: "milvus"
       # url on which llm model is hosted. If "", Nvidia hosted API is used
-      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      #APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
       # embedding model engine used for inference, supported type nvidia-ai-endpoints, huggingface
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       # url on which llm model is hosted. If "", Nvidia hosted API is used
@@ -207,7 +216,8 @@ services:
     command: --port 8081 --host 0.0.0.0 --workers 1
     environment:
       EXAMPLE_PATH: 'src/retrievers/structured_data'
-      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-meta/llama-3.1-70b-instruct}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-meta/llama-3.1-405b-instruct}
+      #APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-meta/llama-3.1-70b-instruct}
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-""}
       APP_EMBEDDINGS_MODELNAME: ${APP_EMBEDDINGS_MODELNAME:-nvidia/nv-embedqa-e5-v5}
@@ -347,7 +357,7 @@ services:
 
   milvus:
     container_name: milvus-standalone
-    image: milvusdb/milvus:v2.4.15-gpu
+    image: milvusdb/milvus:v2.4.15
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -369,13 +379,6 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: ["gpu"]
-              device_ids: ['${VECTORSTORE_GPU_DEVICE_ID:-0}']
 
 
 networks:
