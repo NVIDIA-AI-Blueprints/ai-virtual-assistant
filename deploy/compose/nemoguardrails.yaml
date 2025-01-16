@@ -1,0 +1,27 @@
+services:
+  nemoguardrails:
+    build:
+      context: ../../../nemoguardrails  # Path to the cloned repository
+      dockerfile: Dockerfile
+    container_name: nemoguardrails
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY}  # NVIDIA GPU Cloud API Key
+    ports:
+      - "8650:8650"  # Map container port 8000 to host port 8000
+      - "8000:8000"
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"  # Use the current user's UID/GID
+    command: >
+      bash -c "
+      export OPENAI_API_KEY=${OPENAI_API_KEY} &&
+      cd nemoguardrails
+      pip install --no-cache-dir -e .[all]
+      "
+
