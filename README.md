@@ -74,9 +74,9 @@ The AI virtual assistant for customer service NIM Agent Blueprint, powered by NV
 
 * NVIDIA NIM microservices
    * Response Generation (Inference)
-      * [NIM of meta/llama-3.1-70b-instruct](https://build.nvidia.com/meta/llama-3_1-70b-instruct)
-      * [NIM of nvidia/nv-embedqa-e5-v5](https://build.nvidia.com/nvidia/nv-embedqa-e5-v5)
-      * [NIM of nvidia/rerank-qa-mistral-4b](https://build.nvidia.com/nvidia/rerank-qa-mistral-4b)
+      * [NIM of meta/llama-3.3-70b-instruct](https://build.nvidia.com/meta/llama-3_3-70b-instruct)
+      * [NIM of nvidia/llama-3.2-nv-embedqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-embedqa-1b-v2)
+      * [NIM of nvidia/llama-3.2-nv-rerankqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2)
    * [Synthetic Data Generation](./notebooks/synthetic_data_generation.ipynb) for reference
       * [NIM of Nemotron4-340B](nvidia/nemotron-4-340b-instruct)
 * Orchestrator Agent - LangGraph based
@@ -111,9 +111,9 @@ The overall hardware requirements depend on the selected deployment. The NIM and
 - (If locally deployed) **LLM NIM**: [Meta Llama 3.1 70B Instruct Support Matrix](https://docs.nvidia.com/nim/large-language-models/latest/support-matrix.html#llama-3-1-70b-instruct)
   - For improved paralleled performance, we recommend 8x or more H100s for LLM inference.
   - The pipeline can share the GPU with the LLM NIM, but it is recommended to have a separate GPU for the LLM NIM for optimal performance.
-- (If locally deployed) **Embedding NIM**: [NV-EmbedQA-E5-v5 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html#nv-embedqa-e5-v5)
+- (If locally deployed) **Embedding NIM**: [llama-3.2-nv-embedqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html#llama-3.2-nv-embedqa-1b-v2)
   - The pipeline can share the GPU with the Embedding NIM, but it is recommended to have a separate GPU for the Embedding NIM for optimal performance.
-- (If locally deployed) **Reranker NIM**: [NV-RerankQA-Mistral4B-v3 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-reranking/latest/support-matrix.html#nv-rerankqa-mistral4b-v3)
+- (If locally deployed) **Reranker NIM**: [llama-3.2-nv-rerankqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-reranking/latest/support-matrix.html#llama-3.2-nv-rerankqa-1b-v2)
 
 ## API definition
 
@@ -307,8 +307,9 @@ f2ce39cf3027   compose-redis-commander-1   Up 3 hours (healthy)
  export USERID="$(id -u):$(id -g)"
 
  # Export path where NIMs are hosted
- # LLM server path
+ # LLM server path & Model name 
  export APP_LLM_SERVERURL=nemollm-inference:8000
+ export APP_LLM_MODELNAME=meta/llama-3.1-70b-instruct # Note the LLM is based on Llama 3.1  for on-prem deployment.
  # Embedding server path
  export APP_EMBEDDINGS_SERVERURL=nemollm-embedding:8000
  # Re-ranking model path
