@@ -87,7 +87,7 @@ The AI virtual assistant for customer service NIM Agent Blueprint, powered by NV
 * Text Retrievers - LangChain
 * Structured Data (CSV) Ingestion - Postgres Database
 * Unstructured Data (PDF) Ingestion - Milvus Database (Vector GPU-optimized)
-* NVIDIA NeMo Guardrails
+* [NVIDIA NeMo Guardrails](https://docs.nvidia.com/nemo/guardrails/index.html)
 
 Docker Compose scripts are provided which spin up the microservices on a single node. When ready for a larger-scale deployment, you can use the included Helm charts to spin up the necessary microservices. You will use sample Jupyter notebooks with the JupyterLab service to interact with the code directly.
 
@@ -158,7 +158,7 @@ The process works as follows:
 * Contextual Reasoning: A large language model uses these retrieved details to generate a helpful, coherent, and contextually appropriate response.
 * Additional Capabilities: Tools like sentiment analysis gauge the user’s satisfaction and conversation summaries help supervisors quickly review interactions.
 * Continuous Improvement: Feedback from interactions is fed back into the system, refining the model’s accuracy and efficiency over time.
-* Safeguarding responses: Safety NIMs integrated with NeMo Guardrails into the system, can provide jailbreak detection, content safety checks and topic following of Agent responses.
+* Safeguarding Responses: Safety NIMs integrated with NeMo Guardrails into the system, can provide jailbreak detection, content safety checks and topic following of Agent responses.
 The end result is a virtual assistant that can understand complex questions, find the right information, and provide personalized, human-like responses, which are safe and accurate
 
 ### Key components
