@@ -22,8 +22,8 @@ applicationSpecs:
         - name: NGC_API_KEY
           value: ""
         image:
-          repository: nvcr.io/nim/nvidia/nv-rerankqa-mistral-4b-v3
-          tag: 1.0.1
+          repository: nvcr.io/nim/nvidia/llama-3.2-nv-rerankqa-1b-v2
+          tag: 1.3.0
         # livenessProbe:
         #   exec:
         #     command:

@@ -161,13 +161,13 @@ retriever-canonical:
           - name: APP_LLM_SERVERURL
             value: nemollm-inference-nemollm-infer-deployment-llm-service:8000
           - name: APP_EMBEDDINGS_MODELNAME
-            value: nvidia/nv-embedqa-e5-v5
+            value: nvidia/llama-3.2-nv-embedqa-1b-v2
           - name: APP_EMBEDDINGS_MODELENGINE
             value: nvidia-ai-endpoints
           - name: APP_EMBEDDINGS_SERVERURL
             value: nemollm-embedding-embedding-deployment-embedding-service:9080
           - name: APP_RANKING_MODELNAME
-            value: nvidia/nv-rerankqa-mistral-4b-v3
+            value: nvidia/llama-3.2-nv-rerankqa-1b-v2
           - name: APP_RANKING_MODELENGINE
             value: nvidia-ai-endpoints
           - name: APP_RANKING_SERVERURL
@@ -220,7 +220,7 @@ retriever-structured:
           - name: APP_LLM_MODELNAMEPANDASAI
             value: meta/llama-3.1-70b-instruct
           - name: APP_EMBEDDINGS_MODELNAME
-            value: nvidia/nv-embedqa-e5-v5
+            value: nvidia/llama-3.2-nv-embedqa-1b-v2
           - name: APP_EMBEDDINGS_MODELENGINE
             value: nvidia-ai-endpoints
           - name: APP_EMBEDDINGS_SERVERURL
