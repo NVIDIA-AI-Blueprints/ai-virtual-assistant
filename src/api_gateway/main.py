@@ -164,7 +164,7 @@ async def fetch_and_process_response(client, method, url, params=None, json=None
     try:
         # Perform the request to the target API
         resp = await client.request(method, url, params=params, json=json)
-
+  
         # Check if the response was successful
         if resp.status_code != 200:
             raise HTTPException(status_code=resp.status_code, detail="Failed to get a response from the backend")
@@ -195,7 +195,7 @@ async def generate_response(request: Request, prompt: AgentRequest) -> Streaming
     logger.info(f"\n======API Gateway called with input: {prompt.dict()}=======\n")
 
     def get_agent_generate_response() -> StreamingResponse:
-        target_api_url = f"{AGENT_SERVER_URL}/generate"
+        target_api_url = f"{AGENT_SERVER_URL}/generate/stream"
 
         async def response_generator():
             # Forward the request to the original API as a POST request
@@ -206,7 +206,7 @@ async def generate_response(request: Request, prompt: AgentRequest) -> Streaming
 
                     # Forward the streaming response from the original API to the client
                     async for chunk in resp.aiter_text():
-                        if chunk:
+                        if chunk and chunk[:5] == "data:":
                             yield chunk
 
         # Return a streaming response to the client
@@ -268,7 +268,7 @@ async def generate_response(request: Request, prompt: AgentRequest) -> Streaming
             target_api_url = f"{AGENT_SERVER_URL}/delete_session"
             params = {"session_id": prompt.session_id}
             async with httpx.AsyncClient(timeout=httpx.Timeout(REQUEST_TIMEOUT)) as client:
-                processed_response = await fetch_and_process_response(client, "DELETE", target_api_url, params=params)
+                processed_response = await fetch_and_process_response(client, "GET", target_api_url, params=params)
                 logger.info(f"Response from /delete_session: {processed_response}")
 
             if prompt.generate_summary:

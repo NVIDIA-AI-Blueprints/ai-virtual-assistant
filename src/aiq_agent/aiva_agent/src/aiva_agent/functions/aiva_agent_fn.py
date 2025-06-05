@@ -31,6 +31,7 @@ class AivaAgentFunctionConfig(FunctionBaseConfig, name="aiva_agent"):
     AIQ Toolkit function template. Please update the description.
     """
     visualize_graph: bool = Field(default=False, description="Whether to visualize the graph")
+    llm_name: str = Field(..., description="The name of the LLM to use with the workflow")
 
 
 @register_function(config_type=AivaAgentFunctionConfig, framework_wrappers=[LLMFrameworkEnum.LANGCHAIN])

@@ -74,5 +74,16 @@ functions:
   feedback_response:
     _type: feedback_response
 
+llms:
+  nim_llm:
+    _type: nim
+    model_name: ${APP_LLM_MODELNAME}
+    base_url: ${APP_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+
 workflow:
   _type: aiva_agent
+  llm_name: nim_llm
