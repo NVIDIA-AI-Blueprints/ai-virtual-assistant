@@ -81,7 +81,7 @@ services:
               device_ids: ['${RANKING_MS_GPU_ID:-5}']
               capabilities: [gpu]
     profiles: ["local-nim"]
-
-networks:
-  default:
-    name: nvidia-rag
+  
+# networks:
+#   default:
+#     name: nvidia-rag
