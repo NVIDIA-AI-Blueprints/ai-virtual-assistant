@@ -29,7 +29,7 @@ general:
       dfw_elasticsearch:
         _type: nemo_dfw_elasticsearch
         endpoint: ${DATA_FLYWHEEL_ENDPOINT}
-        client_id: aiq-ai-virtual-assistant
+        client_id: ${DATA_FLYWHEEL_CLIENT_ID}
         index: flywheel
 
   front_end:
