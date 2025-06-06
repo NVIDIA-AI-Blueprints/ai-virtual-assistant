@@ -26,7 +26,6 @@ from aiq.data_models.component_ref import FunctionRef
 
 logger = logging.getLogger(__name__)
 
-
 class AivaAgentFunctionConfig(FunctionBaseConfig, name="aiva_agent"):
     """
     AIQ Toolkit function template. Please update the description.
@@ -139,18 +138,18 @@ async def aiva_agent_function(
     graph_builder.add_node("ask_clarification", ask_clarification)
     graph_builder.add_node("enter_order_status", create_entry_node("Order Status Assistant"))
     graph_builder.add_node("order_status", Assistant(
-        order_status_prompt, order_status_tools, tool_call_llm))
+        order_status_prompt, order_status_tools, tool_call_llm, chat_llm))
     graph_builder.add_node("order_status_safe_tools", create_tool_node_with_fallback(order_status_safe_tools))
     graph_builder.add_node("return_validation", validate_product_info)
     graph_builder.add_node("enter_return_processing", create_entry_node("Return Processing Assistant"))
     graph_builder.add_node("return_processing", Assistant(
-        return_processing_prompt, return_processing_tools, tool_call_llm))
+        return_processing_prompt, return_processing_tools, tool_call_llm, chat_llm))
     graph_builder.add_node("return_processing_safe_tools", create_tool_node_with_fallback(return_processing_safe_tools))
     graph_builder.add_node("return_processing_sensitive_tools",
                             create_tool_node_with_fallback(return_processing_sensitive_tools))
     graph_builder.add_node("fetch_purchase_history", user_info)
     graph_builder.add_node("primary_assistant", Assistant(
-        primary_assistant_prompt, primary_assistant_tools, tool_call_llm))
+        primary_assistant_prompt, primary_assistant_tools, tool_call_llm, chat_llm, True))
     graph_builder.add_node("other_talk", handle_other_talk)
 
     # Add edges to the graph

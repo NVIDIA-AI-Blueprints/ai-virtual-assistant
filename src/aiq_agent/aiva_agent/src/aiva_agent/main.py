@@ -35,7 +35,7 @@ from aiva_agent.tools import (
         ToProductQAAssistant,
         ToOrderStatusAssistant,
         ToReturnProcessing)
-from aiva_agent.utils import get_product_name, create_tool_node_with_fallback, canonical_rag
+from aiva_agent.utils import create_tool_node_with_fallback, canonical_rag
 from aiva_agent.utils import get_llm, get_prompts
 
 logger = logging.getLogger(__name__)
@@ -109,23 +109,38 @@ def create_entry_node(assistant_name: str) -> Callable:
 
     return entry_node
 
+from .state import ctx_routing_level
 
 @track_function(metadata={"action": "compute", "source": "api"})
 class Assistant:
 
-    def __init__(self, prompt: str, tools: list, llm: BaseChatModel):
+    def __init__(self, prompt: str, tools: list, tool_call_llm: BaseChatModel, chat_llm: BaseChatModel, top_level=False):
         self.prompt = prompt
         self.tools = tools
-        self.llm = llm
+        self.tool_call_llm = tool_call_llm
+        self.chat_llm = chat_llm
+        self.top_level = top_level
     
     async def __call__(self, state: State, config: RunnableConfig):
+
+        routing_level = ctx_routing_level.get()
+        
         while True:
+
+            # Workaround ensuring the tool call model is only used the first time
+            # graph execution
+            if routing_level == 0 and self.top_level:
+                llm = self.tool_call_llm
+            else:
+                llm = self.chat_llm
+            routing_level += 1
 
             llm_settings = config.get('configurable',
                                      {}).get("llm_settings",
                                              default_llm_kwargs)
 
-            runnable = self.prompt | self.llm.bind_tools(self.tools)
+            #runnable = self.prompt | self.llm.bind_tools(self.tools)
+            runnable = self.prompt | llm.bind_tools(self.tools)
             last_message = state["messages"][-1]
             messages = []
             if isinstance(last_message, ToolMessage) and last_message.name in [
@@ -308,4 +323,3 @@ def is_return_product_valid(state: State)  -> Literal[
     if state["needs_clarification"] == True:
         return "ask_clarification"
     return "return_processing"
-

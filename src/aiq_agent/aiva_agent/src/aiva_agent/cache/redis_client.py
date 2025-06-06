@@ -43,7 +43,7 @@ class RedisClient:
         # db = config.get("db", None)  or DEFAULT_DB
         # Hack to deal w/ env variables not passing through
         redis_config = os.getenv("APP_CACHE_URL", "redis:6379")
-        host, port = redis_config.split(":")
+        host, port = redis_config.strip('"').split(":")
         print(f"Host: {host}, Port: {port}, DB: {DEFAULT_DB}")
         self.redis_client = redis.Redis(host=host, port=port, db=DEFAULT_DB, decode_responses=True)
 
