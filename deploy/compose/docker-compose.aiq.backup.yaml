@@ -13,32 +13,30 @@ services:
       # Set context to repo's root directory
       context: ../../
       dockerfile: src/aiq_agent/Dockerfile
-    command: bash -c "aiq serve --config_file aiva_agent/configs/config.yml --host 0.0.0.0 --port 8081"
-    #command: tail -f /dev/null
-    # tty: true
-    # stdin_open: true
+    # command: bash -c "aiq serve --config_file aiva_agent/configs/config.yml --host 0.0.0.0 --port 8081"
+    command: tail -f /dev/null
+    tty: true
+    stdin_open: true
     environment:
       EXAMPLE_PATH: './aiva_agent/src/aiva_agent'
       APP_TOOLCALL_LLM_MODELNAME: ${APP_TOOLCALL_LLM_MODELNAME:-"meta/llama-3.3-70b-instruct"}
       APP_TOOLCALL_LLM_SERVERURL: ${APP_TOOLCALL_LLM_SERVERURL:-""}
       APP_CHAT_LLM_MODELNAME: ${APP_CHAT_LLM_MODELNAME:-"meta/llama-3.3-70b-instruct"}
       APP_CHAT_LLM_SERVERURL: ${APP_CHAT_LLM_SERVERURL:-""}      
-      APP_LLM_MODELENGINE: nvidia-ai-endpoints    
+      APP_LLM_MODELENGINE: nvidia-ai-endpoints
+        
       # Cache name to store user conversation
       # supported type inmemory, redis
       APP_CACHE_NAME: ${APP_CACHE_NAME:-"redis"}
-      #APP_CACHE_URL: ${APP_CACHE_URL:-"redis:6379"}
-      APP_CACHE_URL: ${APP_CACHE_URL:-"localhost:6380"}
+      APP_CACHE_URL: ${APP_CACHE_URL:-"redis:6379"}
       # Database name to store user conversation
       # supported type postgres
       APP_DATABASE_NAME: ${APP_DATABASE_NAME:-"postgres"}
-      #APP_DATABASE_URL: ${APP_DATABASE_URL:-"postgres:5432"}
-      APP_DATABASE_URL: ${APP_DATABASE_URL:-"localhost:5432"}
+      APP_DATABASE_URL: ${APP_DATABASE_URL:-"postgres:5432"}
       # Checkpointer name to store intermediate state of conversation
       # supported type postgres, inmemory
       APP_CHECKPOINTER_NAME: ${APP_CHECKPOINTER_NAME:-"postgres"}
-      #APP_CHECKPOINTER_URL: ${APP_CHECKPOINTER_URL:-"postgres:5432"}
-      APP_CHECKPOINTER_URL: ${APP_CHECKPOINTER_URL:-"localhost:5432"}
+      APP_CHECKPOINTER_URL: ${APP_CHECKPOINTER_URL:-"postgres:5432"}
       # Postgres config
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
@@ -47,10 +45,8 @@ services:
       POSTGRES_USER_READONLY: ${POSTGRES_USER:-postgres_readonly}
       POSTGRES_PASSWORD_READONLY: ${POSTGRES_PASSWORD:-readonly_password}
       CUSTOMER_DATA_DB: ${CUSTOMER_DATA_DB:-customer_data}
-      #CANONICAL_RAG_URL: http://unstructured-retriever:8081
-      CANONICAL_RAG_URL: http://localhost:8088
-      #STRUCTURED_RAG_URI: http://structured-retriever:8081
-      STRUCTURED_RAG_URI: http://localhost:8087
+      CANONICAL_RAG_URL: http://unstructured-retriever:8081
+      STRUCTURED_RAG_URI: http://structured-retriever:8081
       NVIDIA_API_KEY: ${NVIDIA_API_KEY}
       GRAPH_RECURSION_LIMIT: 20
       GRAPH_TIMEOUT_IN_SEC: 40 # 20 # with meta/llama-3.3-70b-instruct
@@ -60,12 +56,9 @@ services:
       LOGLEVEL: ${LOGLEVEL:-INFO}
       # Set the default expiration time (TTL) for Redis keys (in seconds)
       REDIS_SESSION_EXPIRY: 12 # in hours
-      #DATA_FLYWHEEL_ENDPOINT: ${DATA_FLYWHEEL_ENDPOINT:-http://host.docker.internal:9200}
-      DATA_FLYWHEEL_ENDPOINT: ${DATA_FLYWHEEL_ENDPOINT:-http://localhost:9200}
+      DATA_FLYWHEEL_ENDPOINT: ${DATA_FLYWHEEL_ENDPOINT:-http://host.docker.internal:9200}
       DATA_FLYWHEEL_CLIENT_ID: ${DATA_FLYWHEEL_CLIENT_ID:-aiq-aiva}
-      #PHOENIX_ENDPOINT:  ${PHOENIX_ENDPOINT:-http://phoenix:6006/v1/traces}
-      PHOENIX_ENDPOINT:  ${PHOENIX_ENDPOINT:-http://localhost:6006/v1/traces}
-    network_mode: host
+      PHOENIX_ENDPOINT:  ${PHOENIX_ENDPOINT:-http://phoenix:6006/v1/traces}
 
     ports:
     - "8081:8081"
@@ -78,7 +71,8 @@ services:
     - postgres
     - redis
     volumes:
-      - ${PWD}/src/agent/.tmp:/opt/src/agent/.tmp
+      - ${PWD}/src/aiq_agent/.tmp:/opt/src/aiq_agent/.tmp
+      - ${PWD}/src/aiq_agent/aiva_agent:/opt/src/aiq_agent/aiva_agent
     extra_hosts:
       - "host.docker.internal:host-gateway"      
 
@@ -96,15 +90,12 @@ services:
       #- "9000:9000"
       - "10000:9000"
     environment:
-      #AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://agent-chain-server:8081}
-      AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://host.docker.internal:8081}
+      AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://agent-chain-server:8081}
       ANALYTICS_SERVER_URL: ${ANALYTICS_SERVER_URL:-http://analytics-server:8081}
       REQUEST_TIMEOUT: 320 # with meta/llama-3.3-70b-instruct
     restart: unless-stopped  # Optional: Automatically restart the container unless it is stopped
     depends_on:
     - agent-chain-server
-    extra_hosts:
-      - "host.docker.internal:host-gateway"    
 
   agent-frontend:
     image: nvcr.io/nvidia/blueprint/aiva-customer-service-ui:1.1.0

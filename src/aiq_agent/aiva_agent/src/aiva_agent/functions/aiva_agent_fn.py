@@ -22,6 +22,7 @@ from aiq.builder.function_info import FunctionInfo
 from aiq.cli.register_workflow import register_function
 from aiq.data_models.function import FunctionBaseConfig
 from aiq.builder.framework_enum import LLMFrameworkEnum
+from aiq.data_models.component_ref import FunctionRef
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +32,23 @@ class AivaAgentFunctionConfig(FunctionBaseConfig, name="aiva_agent"):
     AIQ Toolkit function template. Please update the description.
     """
     visualize_graph: bool = Field(default=False, description="Whether to visualize the graph")
-    llm_name: str = Field(..., description="The name of the LLM to use with the workflow")
-
+    tool_call_llm_name: str = Field(..., description="The name of the LLM to use for tool call completions.")
+    chat_llm_name: str = Field(..., description="The name of the LLM to use for chat completion.")
+    handle_product_qa_fn: FunctionRef = Field(
+        default="handle_product_qa", description="The name of the tool to use for product QA.")
+    handle_other_talk_fn: FunctionRef = Field(
+        default="handle_other_talk", description="The name of the tool to use for other talk.")
+    ask_clarification_fn: FunctionRef = Field(
+        default="ask_clarification", description="The name of the tool to use for ask clarification.")
+    validate_product_info_fn: FunctionRef = Field(
+        default="validate_product_info", description="The name of the tool to use for validate product info.")
+    user_info_fn: FunctionRef = Field(
+        default="user_info", description="The name of the tool to use for user info.")
 
 @register_function(config_type=AivaAgentFunctionConfig, framework_wrappers=[LLMFrameworkEnum.LANGCHAIN])
 async def aiva_agent_function(
     config: AivaAgentFunctionConfig, builder: Builder
 ):
-
     import time
     import random
     import re
@@ -49,25 +59,134 @@ async def aiva_agent_function(
     from collections.abc import AsyncGenerator
 
     from langgraph.errors import GraphRecursionError
+    from langgraph.graph import START, END
+    from langgraph.graph import StateGraph
     from langchain_core.messages import ToolMessage
+    from langchain_core.runnables import RunnableConfig
 
     from aiva_agent.cache.session_manager import SessionManager
     from aiva_agent.server import FALLBACK_RESPONSES
     from aiva_agent.server import fallback_response_generator
-    from aiva_agent.server import StreamingResponse
     from aiva_agent.server import ChainResponse
     from aiva_agent.server import ChainResponseChoices
     from aiva_agent.server import Message 
     from aiva_agent.utils import get_checkpointer
-    from aiva_agent.main import builder       
     from aiva_agent.server import Prompt
+    from aiva_agent.main import State
+    from aiva_agent.main import create_entry_node
+    from aiva_agent.main import Assistant
+    from aiva_agent.main import create_tool_node_with_fallback
+    from aiva_agent.main import order_status_prompt
+    from aiva_agent.main import return_processing_prompt
+    from aiva_agent.main import primary_assistant_prompt
+    from aiva_agent.main import order_status_tools
+    from aiva_agent.main import order_status_safe_tools
+    from aiva_agent.main import return_processing_safe_tools
+    from aiva_agent.main import return_processing_sensitive_tools
+    from aiva_agent.main import primary_assistant_tools
+    from aiva_agent.main import return_processing_tools
+    from aiva_agent.main import return_processing_prompt
+    from aiva_agent.main import primary_assistant_tools
+    from aiva_agent.main import return_processing_tools
+    from aiva_agent.main import route_order_status
+    from aiva_agent.main import route_return_processing
+    from aiva_agent.main import route_primary_assistant
+    from aiva_agent.main import is_order_product_valid
+    from aiva_agent.main import is_return_product_valid
+    #from aiva_agent.main import user_info
+    
+    # Initialize Tool Call LLM
+    tool_call_llm = await builder.get_llm(config.tool_call_llm_name, 
+                                          wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    tool_call_llm.disable_streaming = True
+    tool_call_llm = tool_call_llm.with_config(tags=["should_stream"])
 
-    memory, pool = await get_checkpointer()
+    # Initialize Chat LLM
+    chat_llm = await builder.get_llm(config.chat_llm_name, 
+                                     wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    chat_llm.disable_streaming = True
+    chat_llm = chat_llm.with_config(tags=["should_stream"])
+
+    # Initialize tools
+    _handle_product_qa = builder.get_function(config.handle_product_qa_fn) 
+    _handle_other_talk = builder.get_function(config.handle_other_talk_fn)  
+    _ask_clarification = builder.get_function(config.ask_clarification_fn)
+    _validate_product_info = builder.get_function(config.validate_product_info_fn)
+    _user_info = builder.get_function(config.user_info_fn)
+
+    # Wrappers to simplify LangGraph integration
+    async def handle_product_qa(state: State, config: RunnableConfig):
+        return await _handle_product_qa({"state": state, "config": config})
+
+    async def handle_other_talk(state: State, config: RunnableConfig):
+        return await _handle_other_talk.ainvoke({"state": state, "config": config})
     
+    async def ask_clarification(state: State, config: RunnableConfig):
+        return await _ask_clarification.ainvoke({"state": state, "config": config})
+    
+    async def validate_product_info(state: State, config: RunnableConfig):
+        return await _validate_product_info.ainvoke({"state": state, "config": config})
+    
+    async def user_info(state: State):
+        return await _user_info.ainvoke(state)
+
+    # BUILD THE GRAPH
+    graph_builder = StateGraph(State)
+
+    # Add nodes to the graph
+    graph_builder.add_node("enter_product_qa",handle_product_qa)    
+    graph_builder.add_node("order_validation", validate_product_info)
+    graph_builder.add_node("ask_clarification", ask_clarification)
+    graph_builder.add_node("enter_order_status", create_entry_node("Order Status Assistant"))
+    graph_builder.add_node("order_status", Assistant(
+        order_status_prompt, order_status_tools, tool_call_llm))
+    graph_builder.add_node("order_status_safe_tools", create_tool_node_with_fallback(order_status_safe_tools))
+    graph_builder.add_node("return_validation", validate_product_info)
+    graph_builder.add_node("enter_return_processing", create_entry_node("Return Processing Assistant"))
+    graph_builder.add_node("return_processing", Assistant(
+        return_processing_prompt, return_processing_tools, tool_call_llm))
+    graph_builder.add_node("return_processing_safe_tools", create_tool_node_with_fallback(return_processing_safe_tools))
+    graph_builder.add_node("return_processing_sensitive_tools",
+                            create_tool_node_with_fallback(return_processing_sensitive_tools))
+    graph_builder.add_node("fetch_purchase_history", user_info)
+    graph_builder.add_node("primary_assistant", Assistant(
+        primary_assistant_prompt, primary_assistant_tools, tool_call_llm))
+    graph_builder.add_node("other_talk", handle_other_talk)
+
+    # Add edges to the graph
+    graph_builder.add_edge("enter_product_qa", END)
+    graph_builder.add_edge("enter_order_status", "order_status")
+    graph_builder.add_edge("enter_return_processing", "return_processing")
+    graph_builder.add_conditional_edges("order_status", route_order_status) 
+    graph_builder.add_edge("order_status_safe_tools", "order_status")
+    graph_builder.add_edge("return_processing_sensitive_tools", "return_processing")
+    graph_builder.add_edge("return_processing_safe_tools", "return_processing")
+    graph_builder.add_conditional_edges("return_processing", route_return_processing)
+    graph_builder.add_edge(START, "fetch_purchase_history")
+    graph_builder.add_edge("ask_clarification", END)
+    graph_builder.add_edge("other_talk", END)
+    graph_builder.add_conditional_edges(
+        "primary_assistant",
+        route_primary_assistant,
+        {
+            "enter_product_qa": "enter_product_qa",
+            "enter_order_status": "enter_order_status",
+            "enter_return_processing": "enter_return_processing",
+            "other_talk":"other_talk",
+            END: END,
+        },
+    )    
+    graph_builder.add_conditional_edges("order_validation", is_order_product_valid)
+    graph_builder.add_conditional_edges("return_validation", is_return_product_valid)
+    graph_builder.add_edge("fetch_purchase_history", "primary_assistant")    
+
     # Compile graph with checkpointer
-    graph = builder.compile(checkpointer=memory,
-                            interrupt_before=["return_processing_sensitive_tools"])
+    memory, pool = await get_checkpointer()
+    graph = graph_builder.compile(
+        checkpointer=memory,
+        interrupt_before=["return_processing_sensitive_tools"])
     
+    # Visualize the graph
     if config.visualize_graph:
         try:
             # Generate the PNG image from the graph
@@ -79,6 +198,7 @@ async def aiva_agent_function(
             # This requires some extra dependencies and is optional
             logger.info(f"An error occurred: {e}")
     
+    # Initialize session manager
     session_manager = SessionManager()
     
     # Implement your function logic here
@@ -158,11 +278,8 @@ async def aiva_agent_function(
                     function_start_time = time.time()
                     # Set Maximum time to wait for a step to complete, in seconds. Defaults to None
                     graph_timeout_env =  os.environ.get('GRAPH_TIMEOUT_IN_SEC', None)           
-                    #agent.graph.step_timeout = int(graph_timeout_env) if graph_timeout_env else None  
                     graph.step_timeout = int(graph_timeout_env) if graph_timeout_env else None  
-                    async for event in graph.astream_events(input_for_graph, version="v2", config=config, debug=debug_langgraph): # TODO FIX BUG IN LANGCHAIN
-                    #async for event in graph.astream_events(input_for_graph, version="v2", config=config, debug=False): 
-                        #print(event)
+                    async for event in graph.astream_events(input_for_graph, version="v2", config=config, debug=debug_langgraph):
                         kind = event["event"]
                         tags = event.get("tags", [])
                         if kind == "on_chain_end" and event['data'].get('output', "") == '__end__':

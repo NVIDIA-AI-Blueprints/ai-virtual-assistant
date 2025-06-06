@@ -26,6 +26,13 @@ from aiva_agent.functions import delete_session_fn
 from aiva_agent.functions import health_check_fn
 from aiva_agent.functions import prometheus_metrics_fn
 from aiva_agent.functions import feedback_response_fn
+from aiva_agent.functions import handle_other_talk_fn
+from aiva_agent.functions import handle_product_qa_fn
+from aiva_agent.functions import ask_clarification_fn
+from aiva_agent.functions import get_product_name_fn
+from aiva_agent.functions import get_purchase_history_fn
+from aiva_agent.functions import validate_product_info_fn
+from aiva_agent.functions import user_info_fn
 
 # Register Observability
 from aiva_agent.observability.nemo_dfw import register_nemo_elasticsearch

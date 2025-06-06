@@ -26,11 +26,11 @@ general:
         _type: phoenix
         endpoint: ${PHOENIX_ENDPOINT}
         project: ai-virtual-assistant  
-      dfw_elasticsearch:
-        _type: nemo_dfw_elasticsearch
-        endpoint: ${DATA_FLYWHEEL_ENDPOINT}
-        client_id: ${DATA_FLYWHEEL_CLIENT_ID}
-        index: flywheel
+      # dfw_elasticsearch:
+      #   _type: nemo_dfw_elasticsearch
+      #   endpoint: ${DATA_FLYWHEEL_ENDPOINT}
+      #   client_id: ${DATA_FLYWHEEL_CLIENT_ID}
+      #   index: flywheel
 
   front_end:
     _type: fastapi
@@ -73,17 +73,48 @@ functions:
     _type: prometheus_metrics    
   feedback_response:
     _type: feedback_response
+  get_product_name:
+    _type: get_product_name
+    llm_name: chat_llm    
+  validate_product_info:
+    _type: validate_product_info
+  get_purchase_history:
+    _type: get_purchase_history
+    database_url: ${APP_DATABASE_URL}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    dbname: ${CUSTOMER_DATA_DB}
+  user_info:
+    _type: user_info
+  handle_product_qa:
+    _type: handle_product_qa
+    llm_name: chat_llm
+  handle_other_talk:
+    _type: handle_other_talk
+    llm_name: chat_llm
+  ask_clarification:
+    _type: ask_clarification
+    llm_name: chat_llm    
 
 llms:
-  nim_llm:
+  tool_call_llm:
     _type: nim
-    model_name: ${APP_LLM_MODELNAME}
-    base_url: ${APP_LLM_SERVERURL}
+    model_name: ${APP_TOOLCALL_LLM_MODELNAME}
+    base_url: ${APP_TOOLCALL_LLM_SERVERURL}
     temperature: 0.2
     top_p: 0.7
     max_tokens: 1024    
     api_key: ${NVIDIA_API_KEY}
+  chat_llm:
+    _type: nim
+    model_name: ${APP_CHAT_LLM_MODELNAME}
+    base_url: ${APP_CHAT_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}    
 
 workflow:
   _type: aiva_agent
-  llm_name: nim_llm
+  tool_call_llm_name: tool_call_llm
+  chat_llm_name: chat_llm

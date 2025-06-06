@@ -42,8 +42,6 @@ def structured_rag(query: str, user_id: str) -> str:
     entry_doc_search = {"query": query, "top_k": 4, "user_id": user_id}
     aggregated_content = ""
     try:
-        print("structured_rag_search:", structured_rag_search)
-        print("entry_doc_search:", entry_doc_search)
         response = requests.post(structured_rag_search, json=entry_doc_search)
         # Extract and aggregate the content
         logger.info(f"Actual Structured Response : {response}")

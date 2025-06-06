@@ -86,6 +86,7 @@ def get_config() -> "ConfigWizard":
     """Parse the application configuration."""
     config_file = os.environ.get("APP_CONFIG_FILE", "/dev/null")
     config = configuration.AppConfig.from_file(config_file)
+    print("CONFIG:", config)
     if config:
         return config
     raise RuntimeError("Unable to find configuration.")
