@@ -94,7 +94,7 @@ services:
     command: --port 9000 --host 0.0.0.0 --workers 1
     ports:
       #- "9000:9000"
-      - "10000:9000"
+      - "10010:9000"
     environment:
       #AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://agent-chain-server:8081}
       AGENT_SERVER_URL: ${AGENT_SERVER_URL:-http://host.docker.internal:8081}
@@ -361,8 +361,10 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     ports:
-      - "9011:9011"
-      - "9010:9010"
+      # - "9011:9011"
+      # - "9010:9010"
+      - "9014:9011"
+      - "9013:9010"      
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
     command: minio server /minio_data --console-address ":9011" --address ":9010"

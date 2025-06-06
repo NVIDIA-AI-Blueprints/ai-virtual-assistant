@@ -43,7 +43,7 @@ RUN rm xz-utils*
 COPY LICENSE-3rd-party.txt /legal/
 
 # Copy and Install agent specific modules
-#COPY src/aiq_agent /opt/src/aiq_agent
+COPY src/aiq_agent /opt/src/aiq_agent
 
 WORKDIR /opt/src/aiq_agent
 
@@ -66,6 +66,6 @@ RUN git clone -b mpenn_tool-call-observability-support https://github.com/mpenn/
     git checkout 47b0787 && \
     cd ..
 
-#RUN uv pip install -e /opt/src/aiq_agent/aiva_agent
+RUN uv pip install -e /opt/src/aiq_agent/aiva_agent
 
 ENTRYPOINT ["/entrypoint.sh"]
