@@ -26,11 +26,11 @@ general:
         _type: phoenix
         endpoint: ${PHOENIX_ENDPOINT}
         project: ai-virtual-assistant  
-      # dfw_elasticsearch:
-      #   _type: nemo_dfw_elasticsearch
-      #   endpoint: ${DATA_FLYWHEEL_ENDPOINT}
-      #   client_id: ${DATA_FLYWHEEL_CLIENT_ID}
-      #   index: flywheel
+      dfw_elasticsearch:
+        _type: nemo_dfw_elasticsearch
+        endpoint: ${DATA_FLYWHEEL_ENDPOINT}
+        client_id: ${DATA_FLYWHEEL_CLIENT_ID}
+        index: flywheel
 
   front_end:
     _type: fastapi
