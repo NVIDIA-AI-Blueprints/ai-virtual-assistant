@@ -92,7 +92,6 @@ async def aiva_agent_function(
     from aiva_agent.main import route_primary_assistant
     from aiva_agent.main import is_order_product_valid
     from aiva_agent.main import is_return_product_valid
-    #from aiva_agent.main import user_info
     
     # Initialize Tool Call LLM
     tool_call_llm = await builder.get_llm(config.tool_call_llm_name, 
@@ -115,7 +114,7 @@ async def aiva_agent_function(
 
     # Wrappers to simplify LangGraph integration
     async def handle_product_qa(state: State, config: RunnableConfig):
-        return await _handle_product_qa({"state": state, "config": config})
+        return await _handle_product_qa.ainvoke({"state": state, "config": config})
 
     async def handle_other_talk(state: State, config: RunnableConfig):
         return await _handle_other_talk.ainvoke({"state": state, "config": config})
