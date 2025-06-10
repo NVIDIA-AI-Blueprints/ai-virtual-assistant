@@ -14,7 +14,7 @@ services:
       context: ../../
       dockerfile: src/aiq_agent/Dockerfile
     command: bash -c "aiq serve --config_file aiva_agent/configs/config.yml --host 0.0.0.0 --port 8081"
-    #command: tail -f /dev/null
+    # command: tail -f /dev/null
     # tty: true
     # stdin_open: true
     environment:
@@ -77,8 +77,10 @@ services:
     - structured-retriever
     - postgres
     - redis
-    volumes:
-      - ${PWD}/src/agent/.tmp:/opt/src/agent/.tmp
+    # volumes:
+    #   - ${PWD}/src/aiq_agent/.tmp:/opt/src/aiq_agent/.tmp
+    #   - ${PWD}/src/aiq_agent/aiva_agent:/opt/src/aiq_agent/aiva_agent
+    #   - ${PWD}/src/aiq_agent/aiqtoolkit:/opt/src/aiq_agent/aiqtoolkit
     extra_hosts:
       - "host.docker.internal:host-gateway"      
 

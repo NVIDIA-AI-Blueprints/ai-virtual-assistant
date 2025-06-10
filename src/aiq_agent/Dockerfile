@@ -61,11 +61,11 @@ exec "$@"' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # # Clone AIQ toolkit
-RUN git clone -b mpenn_tool-call-observability-support https://github.com/mpenn/AIQToolkit.git aiqtoolkit && \
+RUN git clone -b develop https://github.com/NVIDIA/AIQToolkit.git aiqtoolkit && \
     cd aiqtoolkit && \
-    git checkout 47b0787 && \
+    git checkout 67f5e9b && \
     cd ..
 
-RUN uv pip install -e /opt/src/aiq_agent/aiva_agent
+RUN uv pip install -e aiva_agent
 
 ENTRYPOINT ["/entrypoint.sh"]

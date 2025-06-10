@@ -57,20 +57,7 @@ def _get_structured_attribute(span: ReadableSpan,
         logger.error("Invalid JSON in %s: %s", attribute_name, serialized_attribute)
 
     return
-
-
-def _convert_tool_list(message: dict) -> list:
-
-    tools = []
-    additional_input_metadata = message.get("additional_input_metadata", {})
-    if additional_input_metadata is not None:
-        invocation_params = additional_input_metadata.get("invocation_params", {})
-        if invocation_params is not None:
-            for tool in invocation_params.get("tools", []):
-                tools.append(RequestTool(**tool))    
-
-    return tools
-     
+   
 
 def _convert_chat_response(chat_response: dict) -> ResponseChoice | None:
     """Convert a chat response to a DFW payload
@@ -242,7 +229,7 @@ def otel_span_to_dfw_record(span: ReadableSpan) -> NemoDFWRecord:
         messages.append(msg_result)
 
     metadata: dict = _get_structured_attribute(span, "aiq.metadata") or {}
-    tools = _convert_tool_list(metadata)
+    tools = metadata.get("tools_schema", [])
 
     # Construct a Request object
     request = Request(messages=messages, model=str(span.attributes.get("aiq.subspan.name", "")), tools=tools)  

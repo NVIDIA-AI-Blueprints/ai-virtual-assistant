@@ -63,11 +63,10 @@ class NemoDFWElasticsearchExporter(SpanExporter):
         try:
             match span.attributes.get("aiq.event_type"):
                 case IntermediateStepType.LLM_START:
-                    # Skip non-LangChain LLM events until more testing is performed
-                    # framework = json.loads(span.attributes["aiq.metadata"]).get("framework", None)
-                    # if framework != LLMFrameworkEnum.LANGCHAIN.value:
-                    #     logger.warning("Skipping non-LangChain LLM event.")
-                    #     return
+                    # Skip non-LangChain LLM events until support for other frameworks is added
+                    if span.attributes["aiq.framework"] not in (LLMFrameworkEnum.LANGCHAIN.value):
+                        logger.warning("Skipping non-LangChain LLM event.")
+                        return
                     converted_payload = otel_span_to_dfw_record(span)
                     if converted_payload is None:
                         return
