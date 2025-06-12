@@ -29,6 +29,12 @@ from langchain_core.language_models import BaseChatModel
 
 from aiq.profiler.decorators.function_tracking import track_function
 
+# from aiva_agent.tools import (
+#         structured_rag, get_purchase_history, HandleOtherTalk, ProductValidation,
+#         return_window_validation, update_return, get_recent_return_details,
+#         ToProductQAAssistant,
+#         ToOrderStatusAssistant,
+#         ToReturnProcessing)
 from aiva_agent.tools import (
         structured_rag, get_purchase_history, HandleOtherTalk, ProductValidation,
         return_window_validation, update_return, get_recent_return_details,
@@ -139,7 +145,6 @@ class Assistant:
                                      {}).get("llm_settings",
                                              default_llm_kwargs)
 
-            #runnable = self.prompt | self.llm.bind_tools(self.tools)
             runnable = self.prompt | llm.bind_tools(self.tools)
             last_message = state["messages"][-1]
             messages = []
@@ -300,6 +305,10 @@ def route_primary_assistant(
             return "enter_return_processing"
         elif tool_calls[0]["name"] == HandleOtherTalk.__name__:
             return "other_talk"
+    
+    print("TOOL_CALLS: ", tool_calls)
+    print("Test__name__: ", ToReturnProcessing.__name__)
+
     raise ValueError("Invalid route")
 
 

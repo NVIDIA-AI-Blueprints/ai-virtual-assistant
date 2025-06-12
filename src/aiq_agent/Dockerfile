@@ -43,7 +43,7 @@ RUN rm xz-utils*
 COPY LICENSE-3rd-party.txt /legal/
 
 # Copy and Install agent specific modules
-COPY src/aiq_agent /opt/src/aiq_agent
+# COPY src/aiq_agent /opt/src/aiq_agent
 
 WORKDIR /opt/src/aiq_agent
 
@@ -66,6 +66,6 @@ RUN git clone -b develop https://github.com/NVIDIA/AIQToolkit.git aiqtoolkit && 
     git checkout 67f5e9b && \
     cd ..
 
-RUN uv pip install -e aiva_agent
+# RUN uv pip install -e aiva_agent
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -13,10 +13,10 @@ services:
       # Set context to repo's root directory
       context: ../../
       dockerfile: src/aiq_agent/Dockerfile
-    command: bash -c "aiq serve --config_file aiva_agent/configs/config.yml --host 0.0.0.0 --port 8081"
-    # command: tail -f /dev/null
-    # tty: true
-    # stdin_open: true
+    # command: bash -c "aiq serve --config_file aiva_agent/configs/config.yml --host 0.0.0.0 --port 8081"
+    command: tail -f /dev/null
+    tty: true
+    stdin_open: true
     environment:
       EXAMPLE_PATH: './aiva_agent/src/aiva_agent'
       APP_TOOLCALL_LLM_MODELNAME: ${APP_TOOLCALL_LLM_MODELNAME:-"meta/llama-3.3-70b-instruct"}
@@ -77,10 +77,9 @@ services:
     - structured-retriever
     - postgres
     - redis
-    # volumes:
-    #   - ${PWD}/src/aiq_agent/.tmp:/opt/src/aiq_agent/.tmp
-    #   - ${PWD}/src/aiq_agent/aiva_agent:/opt/src/aiq_agent/aiva_agent
-    #   - ${PWD}/src/aiq_agent/aiqtoolkit:/opt/src/aiq_agent/aiqtoolkit
+    volumes:
+      - ${PWD}/src/aiq_agent/.tmp:/opt/src/aiq_agent/.tmp
+      - ${PWD}/src/aiq_agent/aiva_agent:/opt/src/aiq_agent/aiva_agent
     extra_hosts:
       - "host.docker.internal:host-gateway"      
 

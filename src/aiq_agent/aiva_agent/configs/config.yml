@@ -26,11 +26,11 @@ general:
         _type: phoenix
         endpoint: ${PHOENIX_ENDPOINT}
         project: ai-virtual-assistant  
-      dfw_elasticsearch:
-        _type: nemo_dfw_elasticsearch
-        endpoint: ${DATA_FLYWHEEL_ENDPOINT}
-        client_id: ${DATA_FLYWHEEL_CLIENT_ID}
-        index: flywheel
+      # dfw_elasticsearch:
+      #   _type: nemo_dfw_elasticsearch
+      #   endpoint: ${DATA_FLYWHEEL_ENDPOINT}
+      #   client_id: ${DATA_FLYWHEEL_CLIENT_ID}
+      #   index: flywheel
 
   front_end:
     _type: fastapi
@@ -95,6 +95,64 @@ functions:
   ask_clarification:
     _type: ask_clarification
     llm_name: chat_llm    
+  HandleOtherTalk:
+    _type: to_pydantic_model
+    model_name: HandleOtherTalk
+  ToProductQAAssistant:
+    _type: to_pydantic_model
+    model_name: ToProductQAAssistant
+  ToOrderStatusAssistant:
+    _type: to_pydantic_model
+    model_name: ToOrderStatusAssistant
+  ToReturnProcessing:
+    _type: to_pydantic_model
+    model_name: ToReturnProcessing
+  ProductValidation:
+    _type: to_pydantic_model
+    model_name: ProductValidation
+  primary_assistant:
+    _type: assistant
+    tools: [HandleOtherTalk, ToProductQAAssistant, ToOrderStatusAssistant, ToReturnProcessing]
+    tool_call_llm: tool_call_llm
+    chat_llm: chat_llm
+    top_level: true
+    prompt: primary_assistant_template
+  structured_rag:
+    _type: structured_rag
+    uri: ${APP_DATABASE_URL}
+  order_status:
+    _type: assistant
+    tools: [structured_rag, ProductValidation]
+    tool_call_llm: tool_call_llm
+    chat_llm: chat_llm
+    top_level: false
+    prompt: order_status_template 
+  return_window_validation:
+    _type: return_window_validation
+    return_window_time: ${RETURN_WINDOW_THRESHOLD_DAYS}
+  update_return:
+    _type: update_return
+    database_url: ${APP_DATABASE_URL}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    dbname: ${CUSTOMER_DATA_DB}
+  return_processing:
+    _type: assistant
+    tools: [return_window_validation, update_return, get_purchase_history, ProductValidation]
+    tool_call_llm: tool_call_llm
+    chat_llm: chat_llm
+    top_level: false
+    prompt: return_processing_template
+  route_primary_assistant:
+    _type: route_primary_assistant
+  route_order_status:
+    _type: route_order_status
+  route_return_processing:
+    _type: route_return_processing
+  is_order_product_valid:
+    _type: is_order_product_valid
+  is_return_product_valid:
+    _type: is_return_product_valid
 
 llms:
   tool_call_llm:

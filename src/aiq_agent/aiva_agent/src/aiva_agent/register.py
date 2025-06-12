@@ -33,6 +33,16 @@ from aiva_agent.functions import get_product_name_fn
 from aiva_agent.functions import get_purchase_history_fn
 from aiva_agent.functions import validate_product_info_fn
 from aiva_agent.functions import user_info_fn
+from aiva_agent.functions import to_pydantic_model_fn
+from aiva_agent.functions import assistant_fn
+from aiva_agent.functions import structured_rag_fn
+from aiva_agent.functions import return_window_validation_fn
+from aiva_agent.functions import update_return_fn
+from aiva_agent.functions import route_primary_assistant_fn
+from aiva_agent.functions import route_order_status_fn
+from aiva_agent.functions import route_return_processing_fn
+from aiva_agent.functions import is_order_product_valid_fn
+from aiva_agent.functions import is_return_product_valid_fn
 
 # Register Observability
 from aiva_agent.observability.nemo_dfw import register_nemo_elasticsearch

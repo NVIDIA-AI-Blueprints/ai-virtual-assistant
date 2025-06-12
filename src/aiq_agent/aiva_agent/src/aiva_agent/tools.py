@@ -76,6 +76,8 @@ def get_purchase_history(user_id: str) -> str:
 
     app_database_url = get_config().database.url
 
+    print("APP DATABASE URL", app_database_url)
+
     # Parse the URL
     parsed_url = urlparse(f"//{app_database_url}", scheme='postgres')
 

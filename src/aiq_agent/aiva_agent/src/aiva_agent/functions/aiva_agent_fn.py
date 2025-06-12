@@ -43,6 +43,39 @@ class AivaAgentFunctionConfig(FunctionBaseConfig, name="aiva_agent"):
         default="validate_product_info", description="The name of the tool to use for validate product info.")
     user_info_fn: FunctionRef = Field(
         default="user_info", description="The name of the tool to use for user info.")
+    primary_assistant_fn: FunctionRef = Field(
+        default="primary_assistant", 
+        description="The name of the tool to use for primary assistant.")
+    order_status_fn: FunctionRef = Field(
+        default="order_status", 
+        description="The name of the tool to use for the order status assistant.")
+    return_processing_fn: FunctionRef = Field(
+        default="return_processing", 
+        description="The name of the tool to use for the return processing assistant.")
+    route_primary_assistant_fn: FunctionRef = Field(
+        default="route_primary_assistant", 
+        description="The name of the tool to use for the route primary assistant.")
+    route_order_status_fn: FunctionRef = Field(
+        default="route_order_status", 
+        description="The name of the tool to use for the route order status.")
+    route_return_processing_fn: FunctionRef = Field(
+        default="route_return_processing", 
+        description="The name of the tool to use for the route return processing.")
+    order_status_safe_tools: list[FunctionRef] = Field(
+        default=["structured_rag", "ProductValidation"], 
+        description="The name of the tool to use for the order safe tools.")
+    return_processing_safe_tools: list[FunctionRef] = Field(
+        default=["get_purchase_history", "return_window_validation", "return_window_validation"], 
+        description="The name of the tool to use for the return processing safe tools.")
+    return_processing_sensitive_tools: list[FunctionRef] = Field(
+        default=["update_return"], 
+        description="The name of the tool to use for the return processing sensitive tools.")
+    is_order_product_valid_fn: FunctionRef = Field(
+        default="is_order_product_valid", 
+        description="The name of the tool to use for the order product valid.")
+    is_return_product_valid_fn: FunctionRef = Field(
+        default="is_return_product_valid", 
+        description="The name of the tool to use for the return product valid.")
 
 @register_function(config_type=AivaAgentFunctionConfig, framework_wrappers=[LLMFrameworkEnum.LANGCHAIN])
 async def aiva_agent_function(
@@ -73,25 +106,7 @@ async def aiva_agent_function(
     from aiva_agent.server import Prompt
     from aiva_agent.main import State
     from aiva_agent.main import create_entry_node
-    from aiva_agent.main import Assistant
     from aiva_agent.main import create_tool_node_with_fallback
-    from aiva_agent.main import order_status_prompt
-    from aiva_agent.main import return_processing_prompt
-    from aiva_agent.main import primary_assistant_prompt
-    from aiva_agent.main import order_status_tools
-    from aiva_agent.main import order_status_safe_tools
-    from aiva_agent.main import return_processing_safe_tools
-    from aiva_agent.main import return_processing_sensitive_tools
-    from aiva_agent.main import primary_assistant_tools
-    from aiva_agent.main import return_processing_tools
-    from aiva_agent.main import return_processing_prompt
-    from aiva_agent.main import primary_assistant_tools
-    from aiva_agent.main import return_processing_tools
-    from aiva_agent.main import route_order_status
-    from aiva_agent.main import route_return_processing
-    from aiva_agent.main import route_primary_assistant
-    from aiva_agent.main import is_order_product_valid
-    from aiva_agent.main import is_return_product_valid
     
     # Initialize Tool Call LLM
     tool_call_llm = await builder.get_llm(config.tool_call_llm_name, 
@@ -105,12 +120,31 @@ async def aiva_agent_function(
     chat_llm.disable_streaming = True
     chat_llm = chat_llm.with_config(tags=["should_stream"])
 
-    # Initialize tools
+    # Initialize functions
     _handle_product_qa = builder.get_function(config.handle_product_qa_fn) 
     _handle_other_talk = builder.get_function(config.handle_other_talk_fn)  
     _ask_clarification = builder.get_function(config.ask_clarification_fn)
     _validate_product_info = builder.get_function(config.validate_product_info_fn)
     _user_info = builder.get_function(config.user_info_fn)
+    _primary_assistant = builder.get_function(config.primary_assistant_fn)
+    _order_status = builder.get_function(config.order_status_fn)
+    _return_processing = builder.get_function(config.return_processing_fn)
+    _route_primary_assistant = builder.get_function(config.route_primary_assistant_fn)
+    _route_order_status = builder.get_function(config.route_order_status_fn)
+    _route_return_processing = builder.get_function(config.route_return_processing_fn)
+    _is_order_product_valid = builder.get_function(config.is_order_product_valid_fn)
+    _is_return_product_valid = builder.get_function(config.is_return_product_valid_fn)
+    
+    # Initialize tools
+    order_status_safe_tools = builder.get_tools(
+        config.order_status_safe_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    return_processing_safe_tools = builder.get_tools(
+        config.return_processing_safe_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    return_processing_sensitive_tools = builder.get_tools(
+        config.return_processing_sensitive_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
 
     # Wrappers to simplify LangGraph integration
     async def handle_product_qa(state: State, config: RunnableConfig):
@@ -127,35 +161,60 @@ async def aiva_agent_function(
     
     async def user_info(state: State):
         return await _user_info.ainvoke(state)
+    
+    async def primary_assistant(state: State, config: RunnableConfig):
+        return await _primary_assistant.ainvoke({"state": state, "config": config})
+    
+    async def order_status(state: State, config: RunnableConfig):
+        return await _order_status.ainvoke({"state": state, "config": config})
+
+    async def return_processing(state: State, config: RunnableConfig):
+        return await _return_processing.ainvoke({"state": state, "config": config})
+    
+    async def route_primary_assistant(state: State):
+        return await _route_primary_assistant.ainvoke(state)
+    
+    async def route_order_status(state: State):
+        return await _route_order_status.ainvoke(state)
+    
+    async def route_return_processing(state: State):
+        return await _route_return_processing.ainvoke(state)
+    
+    async def is_order_product_valid(state: State):
+        return await _is_order_product_valid.ainvoke(state)
+    
+    async def is_return_product_valid(state: State):
+        return await _is_return_product_valid.ainvoke(state)
 
     # BUILD THE GRAPH
     graph_builder = StateGraph(State)
 
     # Add nodes to the graph
-    graph_builder.add_node("enter_product_qa",handle_product_qa)    
+    graph_builder.add_node("enter_product_qa", handle_product_qa)    
     graph_builder.add_node("order_validation", validate_product_info)
     graph_builder.add_node("ask_clarification", ask_clarification)
     graph_builder.add_node("enter_order_status", create_entry_node("Order Status Assistant"))
-    graph_builder.add_node("order_status", Assistant(
-        order_status_prompt, order_status_tools, tool_call_llm, chat_llm))
+    graph_builder.add_node("order_status", order_status)
     graph_builder.add_node("order_status_safe_tools", create_tool_node_with_fallback(order_status_safe_tools))
     graph_builder.add_node("return_validation", validate_product_info)
     graph_builder.add_node("enter_return_processing", create_entry_node("Return Processing Assistant"))
-    graph_builder.add_node("return_processing", Assistant(
-        return_processing_prompt, return_processing_tools, tool_call_llm, chat_llm))
+    graph_builder.add_node("return_processing", return_processing)
     graph_builder.add_node("return_processing_safe_tools", create_tool_node_with_fallback(return_processing_safe_tools))
     graph_builder.add_node("return_processing_sensitive_tools",
                             create_tool_node_with_fallback(return_processing_sensitive_tools))
     graph_builder.add_node("fetch_purchase_history", user_info)
-    graph_builder.add_node("primary_assistant", Assistant(
-        primary_assistant_prompt, primary_assistant_tools, tool_call_llm, chat_llm, True))
+    graph_builder.add_node("primary_assistant", primary_assistant)    
     graph_builder.add_node("other_talk", handle_other_talk)
 
     # Add edges to the graph
     graph_builder.add_edge("enter_product_qa", END)
     graph_builder.add_edge("enter_order_status", "order_status")
     graph_builder.add_edge("enter_return_processing", "return_processing")
-    graph_builder.add_conditional_edges("order_status", route_order_status) 
+    graph_builder.add_conditional_edges("order_status", route_order_status,         {
+            "order_validation": "order_validation",
+            "order_status_safe_tools":"order_status_safe_tools",
+            END: END,
+        },) 
     graph_builder.add_edge("order_status_safe_tools", "order_status")
     graph_builder.add_edge("return_processing_sensitive_tools", "return_processing")
     graph_builder.add_edge("return_processing_safe_tools", "return_processing")

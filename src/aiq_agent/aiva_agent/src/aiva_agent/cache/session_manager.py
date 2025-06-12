@@ -74,5 +74,4 @@ class SessionManager:
 
     def create_session(self, session_id: str, user_id: str = ""):
         """Create a entry for given session id"""
-        print("CREATING SESSION:", session_id, user_id)
         return self.memory.create_session(session_id, user_id)
