@@ -199,9 +199,11 @@ async def aiva_agent_function(
     graph_builder.add_node("return_validation", validate_product_info)
     graph_builder.add_node("enter_return_processing", create_entry_node("Return Processing Assistant"))
     graph_builder.add_node("return_processing", return_processing)
-    graph_builder.add_node("return_processing_safe_tools", create_tool_node_with_fallback(return_processing_safe_tools))
-    graph_builder.add_node("return_processing_sensitive_tools",
-                            create_tool_node_with_fallback(return_processing_sensitive_tools))
+    graph_builder.add_node(
+        "return_processing_safe_tools", 
+        create_tool_node_with_fallback(return_processing_safe_tools))
+    graph_builder.add_node("return_processing_sensitive_tools", 
+                           create_tool_node_with_fallback(return_processing_sensitive_tools))
     graph_builder.add_node("fetch_purchase_history", user_info)
     graph_builder.add_node("primary_assistant", primary_assistant)    
     graph_builder.add_node("other_talk", handle_other_talk)
@@ -210,15 +212,28 @@ async def aiva_agent_function(
     graph_builder.add_edge("enter_product_qa", END)
     graph_builder.add_edge("enter_order_status", "order_status")
     graph_builder.add_edge("enter_return_processing", "return_processing")
-    graph_builder.add_conditional_edges("order_status", route_order_status,         {
+    graph_builder.add_conditional_edges(
+        "order_status",
+        route_order_status,
+        {
             "order_validation": "order_validation",
-            "order_status_safe_tools":"order_status_safe_tools",
-            END: END,
-        },) 
+            "order_status_safe_tools": "order_status_safe_tools",
+            END: END
+        }
+    )
     graph_builder.add_edge("order_status_safe_tools", "order_status")
     graph_builder.add_edge("return_processing_sensitive_tools", "return_processing")
     graph_builder.add_edge("return_processing_safe_tools", "return_processing")
-    graph_builder.add_conditional_edges("return_processing", route_return_processing)
+    graph_builder.add_conditional_edges(
+        "return_processing",
+        route_return_processing,
+        {
+            "return_validation": "return_validation",
+            "return_processing_safe_tools": "return_processing_safe_tools",
+            "return_processing_sensitive_tools": "return_processing_sensitive_tools",
+            END: END
+        }
+    )
     graph_builder.add_edge(START, "fetch_purchase_history")
     graph_builder.add_edge("ask_clarification", END)
     graph_builder.add_edge("other_talk", END)
@@ -229,10 +244,10 @@ async def aiva_agent_function(
             "enter_product_qa": "enter_product_qa",
             "enter_order_status": "enter_order_status",
             "enter_return_processing": "enter_return_processing",
-            "other_talk":"other_talk",
+            "other_talk": "other_talk",
             END: END,
         },
-    )    
+    )
     graph_builder.add_conditional_edges("order_validation", is_order_product_valid)
     graph_builder.add_conditional_edges("return_validation", is_return_product_valid)
     graph_builder.add_edge("fetch_purchase_history", "primary_assistant")    

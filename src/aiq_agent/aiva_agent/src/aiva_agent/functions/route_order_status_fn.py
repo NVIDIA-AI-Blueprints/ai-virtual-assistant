@@ -57,7 +57,7 @@ async def route_order_status_fn(
         if all(tc["name"] in config.tool_names for tc in tool_calls):
             return "order_status_safe_tools"
         
-        return "order_status_sensitive_tools"
+        raise ValueError("Invalid route")
 
     yield FunctionInfo.create(single_fn=_response_fn, description="Route the order status based on the state.")
 
