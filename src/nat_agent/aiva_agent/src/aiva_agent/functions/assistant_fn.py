@@ -47,9 +47,6 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
 
     from aiva_agent.state import ctx_routing_level
     from aiva_agent.utils import get_prompts
-    from aiva_agent.main import State
-    from langchain_core.runnables import RunnableConfig
-    from pydantic import BaseModel
 
     # Initialize tools
     tools = await builder.get_tools(fn_config.tools,
