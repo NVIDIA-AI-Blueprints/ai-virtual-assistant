@@ -1,0 +1,36 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 64"]
+
+[tool.setuptools_scm]
+root = "../nemo-agent-toolkit"
+
+[project]
+name = "aiva_agent"
+version = "0.1.0"
+dependencies = [
+  "nvidia-nat[langchain]",
+  "nvidia-nat[phoenix]",
+  "nvidia-nat[data-flywheel]",
+  "uvicorn[standard]~=0.34.0",
+  "psycopg_pool",
+  "psycopg",
+  "psycopg2-binary",
+  "psycopg[binary]",
+  "SQLAlchemy",
+  "langgraph-checkpoint-postgres",
+  "dataclass-wizard",
+  "redis",
+  "prometheus_client",
+  "bleach",
+  "nest-asyncio",
+]
+requires-python = ">=3.11,<3.13"
+description = "Custom AIQ Toolkit Workflow"
+classifiers = ["Programming Language :: Python"]
+
+[tool.uv.sources]
+nvidia-nat = { path = "../nemo-agent-toolkit", editable = true }
+
+[project.entry-points.'nat.components']
+aiva_agent = "aiva_agent.register"

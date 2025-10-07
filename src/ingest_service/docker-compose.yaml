@@ -7,9 +7,9 @@ services:
       dockerfile: ./src/ingest_service/Dockerfile
     command: >
       /bin/sh -c "python3 import_csv_to_sql.py --host postgres --port 5432 &&
-                  python3 ingest_doc.py --host unstructured-retriever --port 8081"
+                  python3 ingest_doc.py --host unstructured-retriever --port 8088"
 
 networks:
   default:
-    external: true
+    #external: true
     name: nvidia-rag
