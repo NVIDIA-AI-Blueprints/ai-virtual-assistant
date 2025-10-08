@@ -20,9 +20,9 @@ services:
     environment:
       EXAMPLE_PATH: './aiva_agent/src/aiva_agent'
       APP_PROMPT_CONFIG_FILE: 'aiva_agent/src/aiva_agent/prompt.yaml'
-      APP_TOOLCALL_LLM_MODELNAME: ${APP_TOOLCALL_LLM_MODELNAME:-"meta/llama-3.3-70b-instruct"}
+      APP_TOOLCALL_LLM_MODELNAME: ${APP_TOOLCALL_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
       APP_TOOLCALL_LLM_SERVERURL: ${APP_TOOLCALL_LLM_SERVERURL:-""}
-      APP_CHAT_LLM_MODELNAME: ${APP_CHAT_LLM_MODELNAME:-"meta/llama-3.3-70b-instruct"}
+      APP_CHAT_LLM_MODELNAME: ${APP_CHAT_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
       APP_CHAT_LLM_SERVERURL: ${APP_CHAT_LLM_SERVERURL:-""}      
       APP_LLM_MODELENGINE: nvidia-ai-endpoints    
       # Cache name to store user conversation

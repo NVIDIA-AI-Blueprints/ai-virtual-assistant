@@ -132,99 +132,125 @@ async def aiva_agent_function(config: AivaAgentFunctionConfig,
     chat_llm = chat_llm.with_config(tags=["should_stream"])
 
     # Initialize functions
-    handle_product_qa = await builder.get_function(config.handle_product_qa_fn)
-    handle_other_talk = await builder.get_function(config.handle_other_talk_fn)
-    ask_clarification = await builder.get_function(config.ask_clarification_fn)
-    validate_product_info = await builder.get_function(config.validate_product_info_fn)
-    user_info = await builder.get_function(config.user_info_fn)
-    return_processing = await builder.get_function(config.return_processing_fn)
-    route_primary_assistant = await builder.get_function(config.route_primary_assistant_fn)
-    route_order_status = await builder.get_function(config.route_order_status_fn)
-    route_return_processing = await builder.get_function(config.route_return_processing_fn)
-    is_order_product_valid = await builder.get_function(config.is_order_product_valid_fn)
-    is_return_product_valid = await builder.get_function(config.is_return_product_valid_fn)
-
-    # Create wrappers as work-around for LangGraph typing enforcement
+    _handle_product_qa = await builder.get_function(config.handle_product_qa_fn) 
+    _handle_other_talk = await builder.get_function(config.handle_other_talk_fn)  
+    _ask_clarification = await builder.get_function(config.ask_clarification_fn)
+    _validate_product_info = await builder.get_function(config.validate_product_info_fn)
+    _user_info = await builder.get_function(config.user_info_fn)
     _primary_assistant = await builder.get_function(config.primary_assistant_fn)
     _order_status = await builder.get_function(config.order_status_fn)
+    _return_processing = await builder.get_function(config.return_processing_fn)
+    _route_primary_assistant = await builder.get_function(config.route_primary_assistant_fn)
+    _route_order_status = await builder.get_function(config.route_order_status_fn)
+    _route_return_processing = await builder.get_function(config.route_return_processing_fn)
+    _is_order_product_valid = await builder.get_function(config.is_order_product_valid_fn)
+    _is_return_product_valid = await builder.get_function(config.is_return_product_valid_fn)
+    
+    # Initialize tools
+    order_status_safe_tools = await builder.get_tools(
+        config.order_status_safe_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    return_processing_safe_tools = await builder.get_tools(
+        config.return_processing_safe_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    return_processing_sensitive_tools = await builder.get_tools(
+        config.return_processing_sensitive_tools, 
+        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
 
+    # Wrappers to simplify LangGraph integration
+    async def handle_product_qa(state: State, config: RunnableConfig):
+        return await _handle_product_qa.ainvoke({"state": state, "config": config})
+
+    async def handle_other_talk(state: State, config: RunnableConfig):
+        return await _handle_other_talk.ainvoke({"state": state, "config": config})
+    
+    async def ask_clarification(state: State, config: RunnableConfig):
+        return await _ask_clarification.ainvoke({"state": state, "config": config})
+    
+    async def validate_product_info(state: State, config: RunnableConfig):
+        return await _validate_product_info.ainvoke({"state": state, "config": config})
+    
+    async def user_info(state: State):
+        return await _user_info.ainvoke(state)
+    
     async def primary_assistant(state: State, config: RunnableConfig):
-        return await _primary_assistant.ainvoke({
-            "state": state,
-            "config": config
-        })
-
+        return await _primary_assistant.ainvoke({"state": state, "config": config})
+    
     async def order_status(state: State, config: RunnableConfig):
         return await _order_status.ainvoke({"state": state, "config": config})
 
-    # Initialize tools
-    order_status_safe_tools = await builder.get_tools(
-        config.order_status_safe_tools,
-        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    return_processing_safe_tools = await builder.get_tools(
-        config.return_processing_safe_tools,
-        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    return_processing_sensitive_tools = await builder.get_tools(
-        config.return_processing_sensitive_tools,
-        wrapper_type=LLMFrameworkEnum.LANGCHAIN)
+    async def return_processing(state: State, config: RunnableConfig):
+        return await _return_processing.ainvoke({"state": state, "config": config})
+    
+    async def route_primary_assistant(state: State):
+        return await _route_primary_assistant.ainvoke(state)
+    
+    async def route_order_status(state: State):
+        return await _route_order_status.ainvoke(state)
+    
+    async def route_return_processing(state: State):
+        return await _route_return_processing.ainvoke(state)
+    
+    async def is_order_product_valid(state: State):
+        return await _is_order_product_valid.ainvoke(state)
+    
+    async def is_return_product_valid(state: State):
+        return await _is_return_product_valid.ainvoke(state)
 
     # BUILD THE GRAPH
     graph_builder = StateGraph(State)
 
     # Add nodes to the graph
-    graph_builder.add_node("enter_product_qa", handle_product_qa.ainvoke)
-    graph_builder.add_node("order_validation",
-                           validate_product_info.ainvoke)
-    graph_builder.add_node("ask_clarification", ask_clarification.ainvoke)
-    graph_builder.add_node("enter_order_status",
-                           create_entry_node("Order Status Assistant"))
+    graph_builder.add_node("enter_product_qa", handle_product_qa)    
+    graph_builder.add_node("order_validation", validate_product_info)
+    graph_builder.add_node("ask_clarification", ask_clarification)
+    graph_builder.add_node("enter_order_status", create_entry_node("Order Status Assistant"))
     graph_builder.add_node("order_status", order_status)
+    graph_builder.add_node("order_status_safe_tools", create_tool_node_with_fallback(order_status_safe_tools))
+    graph_builder.add_node("return_validation", validate_product_info)
+    graph_builder.add_node("enter_return_processing", create_entry_node("Return Processing Assistant"))
+    graph_builder.add_node("return_processing", return_processing)
     graph_builder.add_node(
-        "order_status_safe_tools",
-        create_tool_node_with_fallback(order_status_safe_tools))
-    graph_builder.add_node("return_validation",
-                           validate_product_info.ainvoke)
-    graph_builder.add_node("enter_return_processing",
-                           create_entry_node("Return Processing Assistant"))
-    graph_builder.add_node("return_processing", return_processing.ainvoke)
-    graph_builder.add_node(
-        "return_processing_safe_tools",
+        "return_processing_safe_tools", 
         create_tool_node_with_fallback(return_processing_safe_tools))
-    graph_builder.add_node(
-        "return_processing_sensitive_tools",
-        create_tool_node_with_fallback(return_processing_sensitive_tools))
-    graph_builder.add_node("fetch_purchase_history", user_info.ainvoke)
-    graph_builder.add_node("primary_assistant", primary_assistant)
-    graph_builder.add_node("other_talk", handle_other_talk.ainvoke)
+    graph_builder.add_node("return_processing_sensitive_tools", 
+                           create_tool_node_with_fallback(return_processing_sensitive_tools))
+    graph_builder.add_node("fetch_purchase_history", user_info)
+    graph_builder.add_node("primary_assistant", primary_assistant)    
+    graph_builder.add_node("other_talk", handle_other_talk)
 
     # Add edges to the graph
     graph_builder.add_edge("enter_product_qa", END)
     graph_builder.add_edge("enter_order_status", "order_status")
     graph_builder.add_edge("enter_return_processing", "return_processing")
     graph_builder.add_conditional_edges(
-        "order_status", route_order_status.ainvoke, {
+        "order_status",
+        route_order_status,
+        {
             "order_validation": "order_validation",
             "order_status_safe_tools": "order_status_safe_tools",
             END: END
-        })
+        }
+    )
     graph_builder.add_edge("order_status_safe_tools", "order_status")
-    graph_builder.add_edge("return_processing_sensitive_tools",
-                           "return_processing")
+    graph_builder.add_edge("return_processing_sensitive_tools", "return_processing")
     graph_builder.add_edge("return_processing_safe_tools", "return_processing")
     graph_builder.add_conditional_edges(
-        "return_processing", route_return_processing.ainvoke, {
+        "return_processing",
+        route_return_processing,
+        {
             "return_validation": "return_validation",
             "return_processing_safe_tools": "return_processing_safe_tools",
-            "return_processing_sensitive_tools":
-            "return_processing_sensitive_tools",
+            "return_processing_sensitive_tools": "return_processing_sensitive_tools",
             END: END
-        })
+        }
+    )
     graph_builder.add_edge(START, "fetch_purchase_history")
     graph_builder.add_edge("ask_clarification", END)
     graph_builder.add_edge("other_talk", END)
     graph_builder.add_conditional_edges(
         "primary_assistant",
-        route_primary_assistant.ainvoke,
+        route_primary_assistant,
         {
             "enter_product_qa": "enter_product_qa",
             "enter_order_status": "enter_order_status",
@@ -233,11 +259,9 @@ async def aiva_agent_function(config: AivaAgentFunctionConfig,
             END: END,
         },
     )
-    graph_builder.add_conditional_edges("order_validation",
-                                        is_order_product_valid.ainvoke)
-    graph_builder.add_conditional_edges("return_validation",
-                                        is_return_product_valid.ainvoke)
-    graph_builder.add_edge("fetch_purchase_history", "primary_assistant")
+    graph_builder.add_conditional_edges("order_validation", is_order_product_valid)
+    graph_builder.add_conditional_edges("return_validation", is_return_product_valid)
+    graph_builder.add_edge("fetch_purchase_history", "primary_assistant") 
 
     # Compile graph with checkpointer
     # memory, pool = await get_checkpointer(
