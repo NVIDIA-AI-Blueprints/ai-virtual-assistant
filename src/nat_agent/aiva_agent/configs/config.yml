@@ -15,10 +15,10 @@
 
 general:
   use_uvloop: true
-  logging:
-    console:
-      _type: console
-      level: WARN
+  # logging:
+  #   console:
+  #     _type: console
+  #     level: WARN
 
   telemetry:
     tracing:

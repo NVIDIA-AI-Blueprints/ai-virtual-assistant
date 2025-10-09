@@ -63,6 +63,7 @@ exec "$@"' > /entrypoint.sh && \
 # # Clone neMo Agent Toolkit
 RUN git clone -b develop https://github.com/NVIDIA/NeMo-Agent-Toolkit.git nemo-agent-toolkit && \
     cd nemo-agent-toolkit && \
+    git checkout release/1.3 && \
     cd ..
 
 # RUN uv pip install -e aiva_agent
