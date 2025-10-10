@@ -43,7 +43,7 @@ RUN rm xz-utils*
 COPY LICENSE-3rd-party.txt /legal/
 
 # Copy and Install agent specific modules
-# COPY src/nat_agent /opt/src/nat_agent
+COPY src/nat_agent /opt/src/nat_agent
 
 WORKDIR /opt/src/nat_agent
 
@@ -66,6 +66,6 @@ RUN git clone -b develop https://github.com/NVIDIA/NeMo-Agent-Toolkit.git nemo-a
     git checkout release/1.3 && \
     cd ..
 
-# RUN uv pip install -e aiva_agent
+RUN uv pip install -e aiva_agent
 
 ENTRYPOINT ["/entrypoint.sh"]
