@@ -43,8 +43,6 @@ class AivaAgentFunctionConfig(FunctionBaseConfig, name="aiva_agent"):
     cache_host: str = Field(default="redis", description="The host of the cache to use. Supported types: redis")
     cache_port: int = Field(default=6379, description="The port of the cache to use. Supported types: redis")
     cache_expiry: int = Field(default=12, description="The expiry of the cache to use. Supported types: redis")
-    tool_call_llm_name: str = Field(..., description="The name of the LLM to use for tool call completions.")
-    chat_llm_name: str = Field(..., description="The name of the LLM to use for chat completion.")
     handle_product_qa_fn: FunctionRef = Field(
         default="handle_product_qa", description="The name of the tool to use for product QA.")
     handle_other_talk_fn: FunctionRef = Field(
@@ -118,18 +116,6 @@ async def aiva_agent_function(config: AivaAgentFunctionConfig,
     from aiva_agent.main import State
     from aiva_agent.main import create_entry_node
     from aiva_agent.main import create_tool_node_with_fallback
-
-    # Initialize Tool Call LLM
-    tool_call_llm = await builder.get_llm(
-        config.tool_call_llm_name, wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    tool_call_llm.disable_streaming = True
-    tool_call_llm = tool_call_llm.with_config(tags=["should_stream"])
-
-    # Initialize Chat LLM
-    chat_llm = await builder.get_llm(config.chat_llm_name,
-                                     wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    chat_llm.disable_streaming = True
-    chat_llm = chat_llm.with_config(tags=["should_stream"])
 
     # Initialize functions
     _handle_product_qa = await builder.get_function(config.handle_product_qa_fn) 

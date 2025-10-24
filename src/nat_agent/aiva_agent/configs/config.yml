@@ -30,7 +30,7 @@ general:
         _type: data_flywheel_elasticsearch
         endpoint: ${DATA_FLYWHEEL_ENDPOINT}
         client_id: ${DATA_FLYWHEEL_CLIENT_ID}
-        index: flywheel
+        index: ${DATA_FLYWHEEL_ES_INDEX}
 
   front_end:
     _type: fastapi
@@ -142,8 +142,7 @@ functions:
   primary_assistant:
     _type: assistant
     tools: [HandleOtherTalk, ToProductQAAssistant, ToOrderStatusAssistant, ToReturnProcessing]
-    tool_call_llm: tool_call_llm
-    chat_llm: chat_llm
+    llm: primary_assistant_llm
     top_level: true
     prompt: primary_assistant_template
     prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
@@ -153,8 +152,7 @@ functions:
   order_status:
     _type: assistant
     tools: [structured_rag, ProductValidation]
-    tool_call_llm: tool_call_llm
-    chat_llm: chat_llm
+    llm: order_status_llm
     top_level: false
     prompt: order_status_template
     prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
@@ -170,8 +168,7 @@ functions:
   return_processing:
     _type: assistant
     tools: [return_window_validation, update_return, get_purchase_history, ProductValidation]
-    tool_call_llm: tool_call_llm
-    chat_llm: chat_llm
+    llm: return_processing_llm
     top_level: false
     prompt: return_processing_template
     prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
@@ -190,14 +187,6 @@ functions:
     url: ${CANONICAL_RAG_URL}
 
 llms:
-  tool_call_llm:
-    _type: nim
-    model_name: ${APP_TOOLCALL_LLM_MODELNAME}
-    base_url: ${APP_TOOLCALL_LLM_SERVERURL}
-    temperature: 0.2
-    top_p: 0.7
-    max_tokens: 1024    
-    api_key: ${NVIDIA_API_KEY}
   chat_llm:
     _type: nim
     model_name: ${APP_CHAT_LLM_MODELNAME}
@@ -205,12 +194,38 @@ llms:
     temperature: 0.2
     top_p: 0.7
     max_tokens: 1024    
-    api_key: ${NVIDIA_API_KEY}    
-
+    api_key: ${NVIDIA_API_KEY}
+    thinking: false
+  primary_assistant_llm:
+    _type: nim
+    model_name: ${PRIMARY_ASSISTANT_LLM_MODELNAME}
+    base_url: ${PRIMARY_ASSISTANT_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+    thinking: false
+  order_status_llm:
+    _type: nim
+    model_name: ${ORDER_STATUS_LLM_MODELNAME}
+    base_url: ${ORDER_STATUS_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+    thinking: false
+  return_processing_llm:
+    _type: nim
+    model_name: ${RETURN_PROCESSING_LLM_MODELNAME}
+    base_url: ${RETURN_PROCESSING_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+    thinking: false
+    
 workflow:
   _type: aiva_agent
-  tool_call_llm_name: tool_call_llm
-  chat_llm_name: chat_llm
   checkpointer_type: ${APP_CHECKPOINTER_NAME}
   checkpointer_url: ${APP_CHECKPOINTER_URL}
   checkpointer_db_user: ${POSTGRES_USER}

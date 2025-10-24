@@ -31,8 +31,7 @@ logger = logging.getLogger(__name__)
 class AssistantFnConfig(FunctionBaseConfig, name="assistant"):
     """Create a new session."""
     tools: list[FunctionRef] = Field(..., description="The tools to use for the assistant.")
-    tool_call_llm: LLMRef = Field(..., description="The tool call LLM to use for the assistant.")
-    chat_llm: LLMRef = Field(..., description="The chat LLM to use for the assistant.")
+    llm: LLMRef = Field(..., description="The LLM to use for the assistant.")
     top_level: bool = Field(..., description="Whether the assistant is the top level assistant.")
     prompt: str = Field(..., description="The prompt to use for the assistant.")
     prompt_config_file: str = Field(default="prompt.yaml", description="The path to the prompt configuration file.")
@@ -45,7 +44,6 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
     from langchain_core.messages import AIMessage
     from langchain_core.prompts.chat import ChatPromptTemplate
 
-    from aiva_agent.state import ctx_routing_level
     from aiva_agent.utils import get_prompts
 
     # Initialize tools
@@ -53,15 +51,10 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
                                     wrapper_type=LLMFrameworkEnum.LANGCHAIN)
 
     # Initialize LLMs
-    tool_call_llm = await builder.get_llm(
-        fn_config.tool_call_llm, wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    tool_call_llm.disable_streaming = True
-    tool_call_llm = tool_call_llm.with_config(tags=["should_stream"])
-
-    chat_llm = await builder.get_llm(fn_config.chat_llm,
+    llm = await builder.get_llm(fn_config.llm,
                                      wrapper_type=LLMFrameworkEnum.LANGCHAIN)
-    chat_llm.disable_streaming = True
-    chat_llm = chat_llm.with_config(tags=["should_stream"])
+    llm.disable_streaming = True
+    llm = llm.with_config(tags=["should_stream"])
 
     # Initialize prompts
     prompts = get_prompts(prompt_config_file=fn_config.prompt_config_file)
@@ -72,20 +65,10 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
     ])
 
     # Initialize runnables
-    tool_call_runnable = prompt | tool_call_llm.bind_tools(tools)
-    chat_runnable = prompt | chat_llm.bind_tools(tools)
+    llm_runnable = prompt | llm.bind_tools(tools)
 
     async def _response_fn(state: dict, config: dict) -> dict:
-
-        routing_level = ctx_routing_level.get()
-
         while True:
-            if routing_level == 0 and fn_config.top_level:
-                runnable = tool_call_runnable
-            else:
-                runnable = chat_runnable
-            routing_level += 1
-
             last_message = state["messages"][-1]
             messages = []
 
@@ -94,7 +77,7 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
                     "update_return", "get_purchase_history",
                     "get_recent_return_details"
             ]:
-                gen = runnable.with_config(
+                gen = llm_runnable.with_config(
                     tags=["should_stream"],
                     stream_runnable=True,
                     callbacks=config.get(
@@ -105,7 +88,7 @@ async def assistant_fn(fn_config: AssistantFnConfig, builder: Builder):
                     messages.append(message.content)
                 result = AIMessage(content="".join(messages)).to_dict()
             else:
-                result = await runnable.ainvoke(state)
+                result = await llm_runnable.ainvoke(state)
             if not result.tool_calls and (
                     not result.content or isinstance(result.content, list)
                     and not result.content[0].get("text")):

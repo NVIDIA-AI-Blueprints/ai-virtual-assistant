@@ -20,11 +20,15 @@ services:
     environment:
       EXAMPLE_PATH: './aiva_agent/src/aiva_agent'
       APP_PROMPT_CONFIG_FILE: 'aiva_agent/src/aiva_agent/prompt.yaml'
-      APP_TOOLCALL_LLM_MODELNAME: ${APP_TOOLCALL_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
-      APP_TOOLCALL_LLM_SERVERURL: ${APP_TOOLCALL_LLM_SERVERURL:-""}
       APP_CHAT_LLM_MODELNAME: ${APP_CHAT_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
-      APP_CHAT_LLM_SERVERURL: ${APP_CHAT_LLM_SERVERURL:-""}      
-      APP_LLM_MODELENGINE: nvidia-ai-endpoints    
+      APP_CHAT_LLM_SERVERURL: ${APP_CHAT_LLM_SERVERURL:-""}
+      PRIMARY_ASSISTANT_LLM_MODELNAME: ${PRIMARY_ASSISTANT_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      PRIMARY_ASSISTANT_LLM_SERVERURL: ${PRIMARY_ASSISTANT_LLM_SERVERURL:-""}
+      ORDER_STATUS_LLM_MODELNAME: ${ORDER_STATUS_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      ORDER_STATUS_LLM_SERVERURL: ${ORDER_STATUS_LLM_SERVERURL:-""}
+      RETURN_PROCESSING_LLM_MODELNAME: ${RETURN_PROCESSING_LLM_MODELNAME:-"meta/llama-3.1-405b-instruct"}
+      RETURN_PROCESSING_LLM_SERVERURL: ${RETURN_PROCESSING_LLM_SERVERURL:-""}  
+      APP_LLM_MODELENGINE: nvidia-ai-endpoints
       # Cache name to store user conversation
       # supported type inmemory, redis
       APP_CACHE_NAME: ${APP_CACHE_NAME:-"redis"}
@@ -67,6 +71,7 @@ services:
       #DATA_FLYWHEEL_ENDPOINT: ${DATA_FLYWHEEL_ENDPOINT:-http://host.docker.internal:9200}
       DATA_FLYWHEEL_ENDPOINT: ${DATA_FLYWHEEL_ENDPOINT:-http://localhost:9200}
       DATA_FLYWHEEL_CLIENT_ID: ${DATA_FLYWHEEL_CLIENT_ID:-nat-aiva}
+      DATA_FLYWHEEL_ES_INDEX: ${DATA_FLYWHEEL_ES_INDEX:-flywheel}
       #PHOENIX_ENDPOINT:  ${PHOENIX_ENDPOINT:-http://phoenix:6006/v1/traces}
       PHOENIX_ENDPOINT:  ${PHOENIX_ENDPOINT:-http://localhost:6006/v1/traces}
     network_mode: host
@@ -192,12 +197,12 @@ services:
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       # url on which llm model is hosted. If "", Nvidia hosted API is used
       APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-""}
-      APP_EMBEDDINGS_MODELNAME: ${APP_EMBEDDINGS_MODELNAME:-nvidia/llama-3.2-nv-embedqa-1b-v2}
+      APP_EMBEDDINGS_MODELNAME: ${APP_EMBEDDINGS_MODELNAME:-"nvidia/llama-3.2-nv-embedqa-1b-v2"}
       # embedding model engine used for inference, supported type nvidia-ai-endpoints
       APP_EMBEDDINGS_MODELENGINE: ${APP_EMBEDDINGS_MODELENGINE:-nvidia-ai-endpoints}
       # url on which embedding model is hosted. If "", Nvidia hosted API is used
       APP_EMBEDDINGS_SERVERURL: ${APP_EMBEDDINGS_SERVERURL:-""}
-      APP_RANKING_MODELNAME: ${APP_RANKING_MODELNAME:-"nvidia/llama-3.2-nv-rerankqa-1b-v2"} # Leave it blank to avoid using ranking
+      APP_RANKING_MODELNAME: ${APP_RANKING_MODELNAME:-""} # Leave it blank to avoid using ranking
       # ranking engine used for inference, supported type nvidia-ai-endpoints
       APP_RANKING_MODELENGINE: ${APP_RANKING_MODELENGINE:-nvidia-ai-endpoints}
       # url on which re-ranking model is hosted. If "", Nvidia hosted API is used
@@ -238,7 +243,7 @@ services:
     command: --port 8081 --host 0.0.0.0 --workers 1
     environment:
       EXAMPLE_PATH: 'src/retrievers/structured_data'
-      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-meta/llama-3.3-70b-instruct}
+      APP_LLM_MODELNAME: ${APP_LLM_MODELNAME:-"meta/llama-3.1-70b-instruct"}
       APP_LLM_MODELENGINE: nvidia-ai-endpoints
       APP_LLM_SERVERURL: ${APP_LLM_SERVERURL:-""}
       APP_EMBEDDINGS_MODELNAME: ${APP_EMBEDDINGS_MODELNAME:-nvidia/llama-3.2-nv-embedqa-1b-v2}
