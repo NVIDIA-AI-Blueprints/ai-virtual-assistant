@@ -195,7 +195,6 @@ llms:
     top_p: 0.7
     max_tokens: 1024    
     api_key: ${NVIDIA_API_KEY}
-    thinking: false
   primary_assistant_llm:
     _type: nim
     model_name: ${PRIMARY_ASSISTANT_LLM_MODELNAME}
@@ -204,7 +203,6 @@ llms:
     top_p: 0.7
     max_tokens: 1024    
     api_key: ${NVIDIA_API_KEY}
-    thinking: false
   order_status_llm:
     _type: nim
     model_name: ${ORDER_STATUS_LLM_MODELNAME}
@@ -213,7 +211,6 @@ llms:
     top_p: 0.7
     max_tokens: 1024    
     api_key: ${NVIDIA_API_KEY}
-    thinking: false
   return_processing_llm:
     _type: nim
     model_name: ${RETURN_PROCESSING_LLM_MODELNAME}
@@ -222,7 +219,6 @@ llms:
     top_p: 0.7
     max_tokens: 1024    
     api_key: ${NVIDIA_API_KEY}
-    thinking: false
     
 workflow:
   _type: aiva_agent
