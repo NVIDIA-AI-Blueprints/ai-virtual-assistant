@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# pylint: disable=unused-import
+# flake8: noqa
+
+# Import any tools which need to be automatically registered here
+
+# Register Functions
+from aiva_agent.functions import aiva_agent_fn
+from aiva_agent.functions import create_session_fn
+from aiva_agent.functions import end_session_fn
+from aiva_agent.functions import delete_session_fn
+from aiva_agent.functions import health_check_fn
+from aiva_agent.functions import prometheus_metrics_fn
+from aiva_agent.functions import feedback_response_fn
+from aiva_agent.functions import handle_other_talk_fn
+from aiva_agent.functions import handle_product_qa_fn
+from aiva_agent.functions import ask_clarification_fn
+from aiva_agent.functions import get_product_name_fn
+from aiva_agent.functions import get_purchase_history_fn
+from aiva_agent.functions import validate_product_info_fn
+from aiva_agent.functions import user_info_fn
+from aiva_agent.functions import to_pydantic_model_fn
+from aiva_agent.functions import assistant_fn
+from aiva_agent.functions import structured_rag_fn
+from aiva_agent.functions import return_window_validation_fn
+from aiva_agent.functions import update_return_fn
+from aiva_agent.functions import route_primary_assistant_fn
+from aiva_agent.functions import route_order_status_fn
+from aiva_agent.functions import route_return_processing_fn
+from aiva_agent.functions import is_order_product_valid_fn
+from aiva_agent.functions import is_return_product_valid_fn
+from aiva_agent.functions import canonical_rag_fn

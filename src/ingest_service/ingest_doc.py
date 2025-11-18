@@ -90,24 +90,34 @@ def ingest_faqs(url: str, filename = "./data/FAQ.pdf"):
 
 #Skipping get the list of documents
 
-def ingest_csvs(url: str, directory_path='./data/product',max_workers = 5):
-    filepaths = [os.path.join(directory_path, filename) for filename in os.listdir(directory_path) if filename.endswith(".txt")]
+
+def ingest_csvs(url: str, directory_path='./data/product', max_workers=5):
+    filepaths = [
+        os.path.join(directory_path, filename)
+        for filename in os.listdir(directory_path) if filename.endswith(".txt")
+    ]
     successfully_ingested = []
     failed_ingestion = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(ingest_faqs, url, filepath): filepath for filepath in filepaths}
+        future_to_file = {
+            executor.submit(ingest_faqs, url, filepath): filepath
+            for filepath in filepaths
+        }
 
         for future in as_completed(future_to_file):
             filepath = future_to_file[future]
             try:
                 if future.result():
-                    print(f"Successfully Ingested {os.path.basename(filepath)}")
+                    print(
+                        f"Successfully Ingested {os.path.basename(filepath)}")
                     successfully_ingested.append(filepath)
                 else:
                     print(f"Failed to Ingest {os.path.basename(filepath)}")
                     failed_ingestion.append(filepath)
             except Exception as e:
-                print(f"Exception occurred while ingesting {os.path.basename(filepath)}: {e}")
+                print(
+                    f"Exception occurred while ingesting {os.path.basename(filepath)}: {e}"
+                )
                 failed_ingestion.append(filepath)
 
     print(f"Total files successfully ingested: {len(successfully_ingested)}")

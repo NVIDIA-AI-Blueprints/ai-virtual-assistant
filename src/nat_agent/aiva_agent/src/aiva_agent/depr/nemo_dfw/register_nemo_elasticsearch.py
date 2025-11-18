@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import logging
+
+from pydantic import Field
+
+from nat.builder.builder import Builder
+from nat.cli.register_workflow import register_logging_method
+from nat.cli.register_workflow import register_telemetry_exporter
+from nat.data_models.logging import LoggingBaseConfig
+from nat.data_models.telemetry_exporter import TelemetryExporterBaseConfig
+
+logger = logging.getLogger(__name__)
+
+
+class NemoDFWElasticsearchExporter(TelemetryExporterBaseConfig, name="nemo_dfw_elasticsearch"):
+    """A telemetry exporter to transmit traces to externally an externally hosted NeMo Data Flywheel service."""
+
+    endpoint: str = Field(
+        description="The NeMo Data Flywheel elasticsearch service endpoint to export telemetry traces.")
+    client_id: str = Field(description="The service name to use when indexing the telemetry traces.")
+    index: str = Field(description="The index to use when indexing the telemetry traces.")
+
+
+@register_telemetry_exporter(config_type=NemoDFWElasticsearchExporter)
+async def nemo_dfw_elasticsearch_exporter(config: NemoDFWElasticsearchExporter, builder: Builder):   
+
+    from aiva_agent.observability.nemo_dfw.nemo_elasticsearch_exporter import NemoDFWElasticsearchExporter
+
+    try:
+        yield NemoDFWElasticsearchExporter(elasticsearch_url=config.endpoint, index=config.index, client_id=config.client_id)
+    except ConnectionError as ex:
+        logger.warning("Unable to connect to NeMo Data Flywheel Elasticsearch service. "
+                       "Are you sure the service is running?\n %s",
+                       ex,
+                       exc_info=True)
+    except Exception as ex:
+        logger.error("Error in NeMo Data Flywheel telemetry Exporter\n %s", ex, exc_info=True)  

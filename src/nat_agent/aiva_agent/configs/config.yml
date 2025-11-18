@@ -1,0 +1,233 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+general:
+  use_uvloop: true
+  # logging:
+  #   console:
+  #     _type: console
+  #     level: WARN
+
+  telemetry:
+    tracing:
+      phoenix:
+        _type: phoenix
+        endpoint: ${PHOENIX_ENDPOINT}
+        project: ai-virtual-assistant  
+      dfw_elasticsearch:
+        _type: data_flywheel_elasticsearch
+        endpoint: ${DATA_FLYWHEEL_ENDPOINT}
+        client_id: ${DATA_FLYWHEEL_CLIENT_ID}
+        index: ${DATA_FLYWHEEL_ES_INDEX}
+
+  front_end:
+    _type: fastapi
+    endpoints:
+      - path: /create_session
+        method: GET
+        description: Generate a new session id.
+        function_name: create_session
+      - path: /end_session
+        method: GET
+        description: Ends the session for session id
+        function_name: end_session
+      - path: /delete_session
+        method: GET
+        description: Deletes session for session id.
+        function_name: delete_session        
+      - path: /health
+        method: GET
+        description: Validates the service is running.
+        function_name: health_check      
+      - path: /metrics
+        method: GET
+        description: Prometheus metrics for the service.
+        function_name: prometheus_metrics   
+      - path: /feedback/response
+        method: POST
+        description: Store user feedback for the last response in a conversation session.
+        function_name: feedback_response                       
+
+functions:
+  create_session:
+    _type: create_session
+    cache_type: ${APP_CACHE_NAME}
+    cache_host: ${APP_CACHE_HOST}
+    cache_port: ${APP_CACHE_PORT}
+    cache_expiry: ${APP_CACHE_EXPIRY}
+    db_url: ${APP_CHECKPOINTER_URL}
+    db_user: ${POSTGRES_USER}
+    db_password: ${POSTGRES_PASSWORD}
+    db_name: ${POSTGRES_DB}
+  end_session:
+    _type: end_session 
+    cache_type: ${APP_CACHE_NAME}
+    cache_host: ${APP_CACHE_HOST}
+    cache_port: ${APP_CACHE_PORT}
+    cache_expiry: ${APP_CACHE_EXPIRY}
+    db_url: ${APP_DATABASE_URL}
+    db_user: ${POSTGRES_USER}
+    db_password: ${POSTGRES_PASSWORD}
+    db_name: ${POSTGRES_DB}
+  delete_session:
+    _type: delete_session
+    checkpointer_type: ${APP_CHECKPOINTER_NAME}
+    cache_type: ${APP_CACHE_NAME}
+    cache_host: ${APP_CACHE_HOST}
+    cache_port: ${APP_CACHE_PORT}
+    cache_expiry: ${APP_CACHE_EXPIRY}
+    db_url: ${APP_DATABASE_URL}
+    db_user: ${POSTGRES_USER}
+    db_password: ${POSTGRES_PASSWORD}
+    db_name: ${POSTGRES_DB}
+  health_check:
+    _type: health_check
+  prometheus_metrics:
+    _type: prometheus_metrics    
+  feedback_response:
+    _type: feedback_response
+  get_product_name:
+    _type: get_product_name
+    llm_name: chat_llm
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  validate_product_info:
+    _type: validate_product_info
+  get_purchase_history:
+    _type: get_purchase_history
+    database_url: ${APP_DATABASE_URL}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    dbname: ${CUSTOMER_DATA_DB}
+  user_info:
+    _type: user_info
+  handle_product_qa:
+    _type: handle_product_qa
+    llm_name: chat_llm
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  handle_other_talk:
+    _type: handle_other_talk
+    llm_name: chat_llm
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  ask_clarification:
+    _type: ask_clarification
+    llm_name: chat_llm
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  HandleOtherTalk:
+    _type: to_pydantic_model
+    model_name: HandleOtherTalk
+  ToProductQAAssistant:
+    _type: to_pydantic_model
+    model_name: ToProductQAAssistant
+  ToOrderStatusAssistant:
+    _type: to_pydantic_model
+    model_name: ToOrderStatusAssistant
+  ToReturnProcessing:
+    _type: to_pydantic_model
+    model_name: ToReturnProcessing
+  ProductValidation:
+    _type: to_pydantic_model
+    model_name: ProductValidation
+  primary_assistant:
+    _type: assistant
+    tools: [HandleOtherTalk, ToProductQAAssistant, ToOrderStatusAssistant, ToReturnProcessing]
+    llm: primary_assistant_llm
+    top_level: true
+    prompt: primary_assistant_template
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  structured_rag:
+    _type: structured_rag
+    uri: ${APP_DATABASE_URL}
+  order_status:
+    _type: assistant
+    tools: [structured_rag, ProductValidation]
+    llm: order_status_llm
+    top_level: false
+    prompt: order_status_template
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  return_window_validation:
+    _type: return_window_validation
+    return_window_time: ${RETURN_WINDOW_THRESHOLD_DAYS}
+  update_return:
+    _type: update_return
+    database_url: ${APP_DATABASE_URL}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    dbname: ${CUSTOMER_DATA_DB}
+  return_processing:
+    _type: assistant
+    tools: [return_window_validation, update_return, get_purchase_history, ProductValidation]
+    llm: return_processing_llm
+    top_level: false
+    prompt: return_processing_template
+    prompt_config_file: ${APP_PROMPT_CONFIG_FILE}
+  route_primary_assistant:
+    _type: route_primary_assistant
+  route_order_status:
+    _type: route_order_status
+  route_return_processing:
+    _type: route_return_processing
+  is_order_product_valid:
+    _type: is_order_product_valid
+  is_return_product_valid:
+    _type: is_return_product_valid
+  canonical_rag:
+    _type: canonical_rag
+    url: ${CANONICAL_RAG_URL}
+
+llms:
+  chat_llm:
+    _type: nim
+    model_name: ${APP_CHAT_LLM_MODELNAME}
+    base_url: ${APP_CHAT_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+  primary_assistant_llm:
+    _type: nim
+    model_name: ${PRIMARY_ASSISTANT_LLM_MODELNAME}
+    base_url: ${PRIMARY_ASSISTANT_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+  order_status_llm:
+    _type: nim
+    model_name: ${ORDER_STATUS_LLM_MODELNAME}
+    base_url: ${ORDER_STATUS_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+  return_processing_llm:
+    _type: nim
+    model_name: ${RETURN_PROCESSING_LLM_MODELNAME}
+    base_url: ${RETURN_PROCESSING_LLM_SERVERURL}
+    temperature: 0.2
+    top_p: 0.7
+    max_tokens: 1024    
+    api_key: ${NVIDIA_API_KEY}
+    
+workflow:
+  _type: aiva_agent
+  checkpointer_type: ${APP_CHECKPOINTER_NAME}
+  checkpointer_url: ${APP_CHECKPOINTER_URL}
+  checkpointer_db_user: ${POSTGRES_USER}
+  checkpointer_db_password: ${POSTGRES_PASSWORD}
+  checkpointer_db_name: ${CUSTOMER_DATA_DB}
+  cache_type: ${APP_CACHE_NAME}
+  cache_host: ${APP_CACHE_HOST}
+  cache_port: ${APP_CACHE_PORT}
+  cache_expiry: ${APP_CACHE_EXPIRY}
