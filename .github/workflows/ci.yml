@@ -95,7 +95,6 @@ jobs:
           TEST_DOCKER_PULL_KEY: ${{ secrets.TEST_DOCKER_PULL_KEY }}
         run: |
           echo "======================================="
-          netstat -an |grep 3001
           echo "$TEST_DOCKER_PULL_KEY" |docker login nvcr.io --username  '$oauthtoken' --password-stdin 
           docker run \
             -v ./notebooks/api_usage_result.html:/app/input/aiva/api_usage.html \
