@@ -97,7 +97,7 @@ jobs:
           echo "======================================="
           echo "$TEST_DOCKER_PULL_KEY" |docker login nvcr.io --username  '$oauthtoken' --password-stdin 
           docker run \
-            --net=host \ 
+            --net=host \
             -v ./notebooks/api_usage_result.html:/app/input/aiva/api_usage.html \
             -v ./notebooks/ingest_data_result.html:/app/input/aiva/ingest_data.html \
             -v "$(pwd):/workspace" \
