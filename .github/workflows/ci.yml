@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   run-notebook:
-    runs-on: arc-runner-set-oke-org-nv-ai-bp
+    runs-on: arc-runners-org-nvidia-ai-bp-1-gpu
     env:
       PYTHON_VERSION: 3.12
     steps:  
@@ -44,7 +44,6 @@ jobs:
           # Get System Info
           echo "===================== System Info ====================="
           more /etc/os-release
-          nvidia-smi
           docker version
           docker compose version
           
