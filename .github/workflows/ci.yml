@@ -95,11 +95,13 @@ jobs:
           TEST_DOCKER_PULL_KEY: ${{ secrets.TEST_DOCKER_PULL_KEY }}
         run: |
           echo "======================================="
+          netstat -an |grep 3001
           echo "$TEST_DOCKER_PULL_KEY" |docker login nvcr.io --username  '$oauthtoken' --password-stdin 
           docker run \
             -v ./notebooks/api_usage_result.html:/app/input/aiva/api_usage.html \
             -v ./notebooks/ingest_data_result.html:/app/input/aiva/ingest_data.html \
             -v "$(pwd):/workspace" \
+            -p 3001:3001 \
             nvcr.io/rw983xdqtcdp/auto_test_team/blueprint-github-test-image:latest \
             pytest -m aiva --disable-warnings --html=/workspace/aiva.html
           
