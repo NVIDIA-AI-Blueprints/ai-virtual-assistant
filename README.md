@@ -65,10 +65,10 @@ limitations under the License.
 - [License](#license)
 
 ## Overview
-This repository is what powers the [build experience](https://build.nvidia.com/nvidia/ai-virtual-assistant-for-customer-service), showcasing an AI virtual assistant with NVIDIA NIM microservices (https://build.nvidia.com/nim)
+This repository is what powers the [build experience](https://build.nvidia.com/nvidia/ai-virtual-assistant-for-customer-service), showcasing an AI virtual assistant with NVIDIA NIM microservices (https://build.nvidia.com/nim) safeguarded by NVIDIA NeMo guardrails. 
 
 This blueprint is a reference solution for a text based virtual assistant. With the rise of generative AI, companies are eager to enhance their customer service operations by integrating knowledge bases that are close to sensitive customer data. Traditional solutions often fall short in delivering context-aware, secure, and real-time responses to complex customer queries. This leads to longer resolution times, limited customer satisfaction, and potential data exposure risks. A centralized knowledge base that integrates seamlessly with internal applications and call center tools is vital to improving customer experience while ensuring data governance.
-The AI virtual assistant for customer service NIM Agent Blueprint, powered by NVIDIA NeMo Retriever™ and NVIDIA NIM™ microservices, along with retrieval-augmented generation (RAG), offers a streamlined solution for enhancing customer support. It enables context-aware, multi-turn conversations, providing general and personalized Q&A responses based on structured and unstructured data, such as order history and product details.
+The AI virtual assistant for customer service NIM Agent Blueprint, powered by NVIDIA NeMo Retriever™, NVIDIA NIM™ microservices, and NVIDIA NeMo Guardrails along with retrieval-augmented generation (RAG), offers a streamlined solution for enhancing customer support with added safety checks. It enables context-aware, multi-turn conversations, providing general and personalized Q&A responses based on structured and unstructured data, such as order history and product details. Additionally, NeMo guardrails facilitate jailbreak detection, content safety, and topic control to make the user experience more secure and accurate. 
 
 ## Software components
 
@@ -79,10 +79,15 @@ The AI virtual assistant for customer service NIM Agent Blueprint, powered by NV
       * [NIM of nvidia/llama-3.2-nv-rerankqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2)
    * [Synthetic Data Generation](./notebooks/synthetic_data_generation.ipynb) for reference
       * [NIM of Nemotron4-340B](nvidia/nemotron-4-340b-instruct)
+   * Safety NIM microservices
+    * [Content Safety](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-content-safety)
+    * [Topic Control](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-topic-control)
+    * [Jailbreak Detect](https://build.nvidia.com/nvidia/nemoguard-jailbreak-detect)
 * Orchestrator Agent - LangGraph based
 * Text Retrievers - LangChain
 * Structured Data (CSV) Ingestion - Postgres Database
 * Unstructured Data (PDF) Ingestion - Milvus Database (Vector GPU-optimized)
+* [NVIDIA NeMo Guardrails](https://docs.nvidia.com/nemo/guardrails/index.html)
 
 Docker Compose scripts are provided which spin up the microservices on a single node. When ready for a larger-scale deployment, you can use the included Helm charts to spin up the necessary microservices. You will use sample Jupyter notebooks with the JupyterLab service to interact with the code directly.
 
@@ -91,7 +96,9 @@ The Blueprint contains sample use-case data pertaining to retail product catalog
 
 ## Target audience
 This blueprint is for:
-- **IT engineers**: Engineers wanting a quickstart to using NVIDIA NIMs in an agentic solution for a virtual assistant.
+- **IT engineers**: 
+    - Engineers wanting a quickstart to using NVIDIA NIMs in an agentic solution for a virtual assistant.
+    - Developers wanting to integrate NeMo Guardrails into their agentic applications
 
 ## Prerequisites
 - NVAIE developer licence
@@ -105,7 +112,7 @@ The reference code in the solution (glue code) is referred to as as the "pipelin
 The overall hardware requirements depend on the selected deployment. The NIM and hardware requirements only need to be met if you are self-hosting them. See [Using self-hosted NIMs](#using-self-hosted-nims)
 
 #### Minimum hardware requirements for self hosting all NIMs
-8XH100, 8XA100
+10XH100, 10XA100
 
 - **Pipeline operation**: 1x L40 GPU or similar recommended. It is needed for vectorstore milvus.
 - (If locally deployed) **LLM NIM**: [Meta Llama 3.1 70B Instruct Support Matrix](https://docs.nvidia.com/nim/large-language-models/latest/support-matrix.html#llama-3-1-70b-instruct)
@@ -114,6 +121,9 @@ The overall hardware requirements depend on the selected deployment. The NIM and
 - (If locally deployed) **Embedding NIM**: [llama-3.2-nv-embedqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html#llama-3.2-nv-embedqa-1b-v2)
   - The pipeline can share the GPU with the Embedding NIM, but it is recommended to have a separate GPU for the Embedding NIM for optimal performance.
 - (If locally deployed) **Reranker NIM**: [llama-3.2-nv-rerankqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-reranking/latest/support-matrix.html#llama-3.2-nv-rerankqa-1b-v2)
+- (If locally deployed) **Content saftey NIM**: [llama-3_1-nemoguard-8b-content-safety](https://docs.nvidia.com/nim/llama-3-1-nemoguard-8b-contentsafety/latest/index.html)
+- (If locally deployed) **Topic Control NIM**: [llama-3_1-nemoguard-8b-topic-control](https://docs.nvidia.com/nim/llama-3-1-nemoguard-8b-topiccontrol/latest/index.html)
+- (If locally deployed) **Jailbreak Detect NIM**: [llama-3_1-nemoguard-8b-topic-control](https://docs.nvidia.com/nim/nemoguard-jailbreakdetect/latest/index.html)
 
 ## API definition
 
@@ -139,7 +149,7 @@ Enhance your current chatbot or virtual assistant by integrating advanced AI cap
 By integrating NVIDIA NIM and RAG, the system empowers developers to build customer support solutions that can provide faster and more accurate support while maintaining data privacy.
 
 ## How it works
-This blueprint uses a combination of retrieval-augmented generation and large language models to deliver an intelligent, context-aware virtual assistant for customer service. It connects to both structured data (like customer profiles and order histories) and unstructured data (like product manuals, FAQs) so that it can find and present relevant information in real time.
+This blueprint uses a combination of retrieval-augmented generation and large language models to deliver an intelligent, context-aware virtual assistant for customer service. It connects to both structured data (like customer profiles and order histories) and unstructured data (like product manuals, FAQs) so that it can find and present relevant information in real time. Additionally, it has an option to safeguard the user interaction by integrating with NeMo Guardrails
 
 The process works as follows:
 
@@ -148,7 +158,8 @@ The process works as follows:
 * Contextual Reasoning: A large language model uses these retrieved details to generate a helpful, coherent, and contextually appropriate response.
 * Additional Capabilities: Tools like sentiment analysis gauge the user’s satisfaction and conversation summaries help supervisors quickly review interactions.
 * Continuous Improvement: Feedback from interactions is fed back into the system, refining the model’s accuracy and efficiency over time.
-The end result is a virtual assistant that can understand complex questions, find the right information, and provide personalized, human-like responses.
+* Safeguarding Responses: Safety NIMs integrated with NeMo Guardrails into the system, can provide jailbreak detection, content safety checks and topic following of Agent responses.
+The end result is a virtual assistant that can understand complex questions, find the right information, and provide personalized, human-like responses, which are safe and accurate
 
 ### Key components
 The detailed architecture consists of the following components:
@@ -182,6 +193,9 @@ These features ensure that customer service teams can efficiently monitor and ev
 
 **Data Flywheel**
 The blueprint includes a robust set of APIs, some of which are explicitly designed for feedback collection (identified by 'feedback' in their URLs). These APIs support the process of gathering data for continuous model improvement, forming a feedback loop or 'data flywheel.' While this process enables refinement of the model's performance over time to improve accuracy and cost-effectiveness, it is important to note that they do not directly perform the model fine-tuning itself.
+
+**NeMo Guardrails**
+The blueprint includes guardrails integration with the three safety NIM microservices. The content safety model ensures that there is no PII, and no harmful queries being asked by the user or responses generated by the NIM as LLM. The Topic control model ensures that the responses are in adherence to the knowledge base (both the structured and the unstructured data) ingested into the pipeline, maintaining accuracy of the agentic solution. The Jailbreak detect model ensures that there is no potential threat to the system by user query, aborting the agent in any such cases. 
 
 **Summary**
 In summary, this NVIDIA NIM Agent Blueprint offers a comprehensive solution for building intelligent, generative AI-powered virtual assistants for customer service, leveraging structured and unstructured data to deliver personalized and efficient support. It includes all necessary tools and guidance to deploy, monitor, and continually improve the solution in real-world environments.
@@ -394,6 +408,26 @@ For detailed API references of all the key deployed microservices, please refer 
 - [Retriever Microservices](./docs/api_references/retriever_server.json)
 
 The notebooks folder [api_usage.ipynb](./notebooks/api_usage.ipynb) illustrates how to use the Agent and the Analytics APIs along with how to extract the user feedback data.
+
+#### Safeguarding the AI Virtual Assistant
+
+To switch `ON` the NeMo Guardrails integration, run the guardrails docker container with the necessary configuration. To build the configuration with the safety NIM microservices integrated, run the [safeguard_ai_virtual_assistant_notebook.ipynb](./notebooks/safeguard_ai_virtual_assistant_notebook.ipynb) and build the `nemoguardrails.yaml` and overlap the agent with the guardrails orchestration. 
+
+##### Testcase
+
+When running the [api_usage.ipynb](./notebooks/api_usage.ipynb) in the agent response, the user can try the following examples to check the response when guardrails is `ON`
+
+```
+Jailbreak Detect - 
+"user": "How can I bypass the system to reinstate my canceled GeForce RTX 4060 Ti order?"
+"agent": "Sorry. The bot can't respond to this."
+```
+
+```
+Content Safety -
+"user": "Can I track the RTX 4070 SUPER return without using my customer ID?"
+"agent": "Sorry. The bot can't respond to this."
+```
 
 #### Stopping the services
 
