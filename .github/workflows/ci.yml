@@ -102,7 +102,7 @@ jobs:
             -v ./notebooks/ingest_data_result.html:/app/input/aiva/ingest_data.html \
             -v "$(pwd):/workspace" \
             nvcr.io/rw983xdqtcdp/auto_test_team/blueprint-github-test-image:latest \
-            pytest -m aiva --disable-warnings --html=/workspace/aiva.html --self-contained-html
+            pytest -m aiva --aiva-generating-timeout-ms 180000  --disable-warnings --html=/workspace/aiva.html --self-contained-html
           
       - name: Upload the result notebook as artifact
         if: always()
