@@ -1,0 +1,23 @@
+# Minimum-viable sanity test for BCS-679.
+# Sends one query to the BP's primary endpoint, asserts response is
+# non-empty AND matches an expected regex keyword (per-BP).
+# Override image_name / command if the BP already ships a richer suite.
+sanity-test:
+  type: bring-your-own-image
+  inputs:
+    image_name: "curlimages/curl:8.10.1"
+    gpu_type: "H100-1"
+    command: |
+      set -euo pipefail
+      curl -f --retry 10 --retry-delay 6 \
+        "http://api-gateway-server:9000/agent/health"
+      RESP=$(curl -sf -X POST \
+        -H "Content-Type: application/json" \
+        -d '{"messages":[{"role":"user","content":"What is NVIDIA?"}],"api_type":"generate","user_id":"sanity","session_id":"sanity"}' \
+        "http://api-gateway-server:9000/agent/generate")
+      echo "Response: $RESP"
+      echo "$RESP" | grep -qE '.{1,}' \
+        || { echo "FAIL: empty response"; exit 1; }
+      echo "$RESP" | grep -iqE 'nvidia|gpu|ai|compute|hardware' \
+        || { echo "FAIL: response does not match expected keyword /nvidia|gpu|ai|compute|hardware/i"; exit 1; }
+      echo "PASS: response non-empty and matched /nvidia|gpu|ai|compute|hardware/i"

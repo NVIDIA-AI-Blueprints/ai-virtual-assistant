@@ -1,0 +1,7 @@
+deploy-compose:
+  type: deploy-compose
+  inputs:
+    compose_file: "deploy/compose/docker-compose.yaml"
+    wait_for_service: "api-gateway-server"
+    healthcheck_url: "http://api-gateway-server:9000/agent/health"
+    timeout_seconds: 600

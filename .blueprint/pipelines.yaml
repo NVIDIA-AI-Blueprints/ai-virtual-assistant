@@ -1,0 +1,6 @@
+pipelines:
+  bcs-nim-migration-sanity:
+    description: "Deploy BP via docker-compose then run a single sanity query."
+    jobs:
+      - deploy-compose
+      - sanity-test
