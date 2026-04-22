@@ -2,7 +2,6 @@
 # Hands off pipeline assembly to the Blueprint Factory.
 variables:
   PIPELINE_NAME: bcs-nim-migration-sanity
-  BPF_RUNNER_IMAGE_TAG: "0.0.0.dev234078784"
   DEVELOP_MODE: "false"
   RUN_CLEANUP_RESOURCES: "true"
   NAMESPACE: "ai-virtual-assistant"
