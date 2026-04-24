@@ -1,0 +1,8 @@
+# Pipelines available for this Blueprint.
+pipelines:
+  bcs-nim-migration-sanity:
+    description: "Bring up the BP via docker-compose and send one sanity query."
+    jobs:
+      - build-container  # stub, required by BPF dependency spec
+      - deploy-compose   # docker compose up with patched NIM tags
+      - sanity-test      # single-query smoke test against the BP's chat API
