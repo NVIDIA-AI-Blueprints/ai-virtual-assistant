@@ -17,6 +17,9 @@ limitations under the License.
 
 <h1><img align="center" src="https://github.com/user-attachments/assets/cbe0d62f-c856-4e0b-b3ee-6184b7c4d96f">NVIDIA AI Blueprint: AI Virtual Assistant for Customer Service</h1>
 
+
+> **Deprecation notice (Apr 2026):** This project is **deprecated**. It is no longer actively maintained, and new production use is not recommended. The blueprint is retained for reference only.
+
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
