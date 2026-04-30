@@ -1,0 +1,11 @@
+# Minimum-viable sanity test for BCS-679. Uses custom-execution so the
+# test container shares the docker network created by deploy-compose.
+# Expects a service at api-gateway-server:9000 with a health
+# endpoint and an inference endpoint; asserts the response is non-empty
+# AND matches nvidia|gpu|ai|compute|hardware (case-insensitive regex).
+sanity-test:
+  type: custom-execution
+  inputs:
+    image_name: "alpine/curl:8.10.1"
+    network: "blueprint_default"
+    command: 'sh -c ''set -e; curl -f --retry 10 --retry-delay 6 "http://api-gateway-server:9000/agent/health" && RESP=$(curl -sf -X POST -H "Content-Type: application/json" -d "{\"messages\":[{\"role\":\"user\",\"content\":\"What is NVIDIA?\"}],\"api_type\":\"generate\",\"user_id\":\"sanity\",\"session_id\":\"sanity\"}" "http://api-gateway-server:9000/agent/generate") && echo "Response: $RESP" && echo "$RESP" | grep -qE ".{1,}" && echo "$RESP" | grep -iqE "nvidia|gpu|ai|compute|hardware" && echo PASS'''

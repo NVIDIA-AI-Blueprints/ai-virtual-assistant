@@ -78,8 +78,8 @@ The AI virtual assistant for customer service NIM Agent Blueprint, powered by NV
 * NVIDIA NIM microservices
    * Response Generation (Inference)
       * [NIM of meta/llama-3.3-70b-instruct](https://build.nvidia.com/meta/llama-3_3-70b-instruct)
-      * [NIM of nvidia/llama-3.2-nv-embedqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-embedqa-1b-v2)
-      * [NIM of nvidia/llama-3.2-nv-rerankqa-1b-v2](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2)
+      * [NIM of nvidia/llama-nemotron-embed-1b-v2](https://build.nvidia.com/nvidia/llama-nemotron-embed-1b-v2)
+      * [NIM of nvidia/llama-nemotron-rerank-1b-v2](https://build.nvidia.com/nvidia/llama-nemotron-rerank-1b-v2)
    * [Synthetic Data Generation](./notebooks/synthetic_data_generation.ipynb) for reference
       * [NIM of Nemotron4-340B](nvidia/nemotron-4-340b-instruct)
 * Orchestrator Agent - LangGraph based
@@ -114,9 +114,9 @@ The overall hardware requirements depend on the selected deployment. The NIM and
 - (If locally deployed) **LLM NIM**: [Meta Llama 3.1 70B Instruct Support Matrix](https://docs.nvidia.com/nim/large-language-models/latest/support-matrix.html#llama-3-1-70b-instruct)
   - For improved paralleled performance, we recommend 8x or more H100s for LLM inference.
   - The pipeline can share the GPU with the LLM NIM, but it is recommended to have a separate GPU for the LLM NIM for optimal performance.
-- (If locally deployed) **Embedding NIM**: [llama-3.2-nv-embedqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html#llama-3.2-nv-embedqa-1b-v2)
+- (If locally deployed) **Embedding NIM**: [llama-nemotron-embed-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/support-matrix.html)
   - The pipeline can share the GPU with the Embedding NIM, but it is recommended to have a separate GPU for the Embedding NIM for optimal performance.
-- (If locally deployed) **Reranker NIM**: [llama-3.2-nv-rerankqa-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-reranking/latest/support-matrix.html#llama-3.2-nv-rerankqa-1b-v2)
+- (If locally deployed) **Reranker NIM**: [llama-nemotron-rerank-1b-v2 Support Matrix](https://docs.nvidia.com/nim/nemo-retriever/text-reranking/latest/support-matrix.html)
 
 ## API definition
 
