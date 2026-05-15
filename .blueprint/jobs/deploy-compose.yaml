@@ -1,0 +1,7 @@
+# Brings up the BP services via docker-compose on the BCS remote host.
+# Schema per blueprint-pipeline/assembler/constructors/deploy_compose/constructor.py.
+deploy-compose:
+  type: deploy-compose
+  inputs:
+    compose:
+      - file: "deploy/compose/docker-compose.yaml"

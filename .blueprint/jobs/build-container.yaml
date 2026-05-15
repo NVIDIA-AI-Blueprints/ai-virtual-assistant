@@ -1,0 +1,18 @@
+# Stub build-container job. Exists solely to satisfy BPF's dependency
+# check that every deploy-compose has a build-container predecessor.
+# The resulting image is never consumed by deploy-compose -- the
+# compose file references pre-built nvcr.io/nvidia/blueprint/aiva-*
+# images directly.
+build-container:
+  type: build-container
+  description: "BPF dependency sentinel (busybox stub, not used at runtime)"
+  inputs:
+    tags:
+      - phucnv-runner
+    registry: "nvcr.io"
+    repository: "nvstaging/blueprint"
+    docker_images:
+      - name: "bpf-ava-stub"
+        dockerfile: ".blueprint/stub-build/Dockerfile"
+        context: ".blueprint/stub-build"
+        tag: "$CI_COMMIT_SHORT_SHA"
