@@ -32,8 +32,8 @@ applicationSpecs:
         - name: MINIO_SECRET_KEY
           value: minioadmin
         image:
-          repository: minio/minio
-          tag: RELEASE.2024-11-07T00-52-20Z
+          repository: pgsty/minio
+          tag: RELEASE.2026-08-04T00-00-00Z
         livenessProbe:
           exec:
             command:
