@@ -32,7 +32,6 @@ prompts = get_prompts()
 logger = logging.getLogger(__name__)
 
 @tool
-@lru_cache
 def structured_rag(query: str, user_id: str) -> str:
     """Use this for answering personalized queries about orders, returns, refunds, and account-specific issues."""
     entry_doc_search = {"query": query, "top_k": 4, "user_id": user_id}
@@ -55,16 +54,15 @@ def structured_rag(query: str, user_id: str) -> str:
 
 
 @tool
-@lru_cache
 def get_purchase_history(user_id: str) -> str:
     """Retrieves the recent return and order details for a user,
     including order ID, product name, status, relevant dates, quantity, and amount."""
 
-    SQL_QUERY = f"""
+    SQL_QUERY = """
     SELECT order_id, product_name, order_date, order_status, quantity, order_amount, return_status,
     return_start_date, return_received_date, return_completed_date, return_reason, notes
     FROM public.customer_data
-    WHERE customer_id={user_id}
+    WHERE customer_id=%s
     ORDER BY order_date DESC
     LIMIT 15;
     """
@@ -89,7 +87,7 @@ def get_purchase_history(user_id: str) -> str:
     # Using context manager for connection and cursor
     with psycopg2.connect(**db_params) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            cur.execute(SQL_QUERY)
+            cur.execute(SQL_QUERY, (user_id,))
             result = cur.fetchall()
 
     # Returning result as a list of dictionaries
@@ -97,7 +95,6 @@ def get_purchase_history(user_id: str) -> str:
 
 
 @tool
-@lru_cache
 def get_recent_return_details(user_id: str) -> str:
     """Retrieves the recent return details for a user, including order ID, product name, return status, and relevant dates."""
 
@@ -139,24 +136,27 @@ def return_window_validation(order_date: str) -> str:
         return "Invalid date format. Please use 'YYYY-MM-DD' for the order date."
 
 @tool
-@lru_cache
 def update_return(user_id: str, current_product: str, order_id: str) -> str:
     """Use this to update return status in the database."""
 
+    # These values come from the LLM, so bind them as query parameters
+    # instead of formatting them into the SQL.
+    params = (user_id, current_product, order_id)
+
     # Query to retrieve the order details
-    SELECT_QUERY = f"""
+    SELECT_QUERY = """
     SELECT order_id, product_name, order_date, order_status
     FROM public.customer_data
-    WHERE customer_id='{user_id}' AND product_name='{current_product}' AND order_id='{order_id}'
+    WHERE customer_id=%s AND product_name=%s AND order_id=%s
     ORDER BY order_date DESC
     LIMIT 1;
     """
 
     # Query to update the return_status
-    UPDATE_QUERY = f"""
+    UPDATE_QUERY = """
     UPDATE public.customer_data
     SET return_status = 'Requested'
-    WHERE customer_id='{user_id}' AND product_name='{current_product}' AND order_id='{order_id}';
+    WHERE customer_id=%s AND product_name=%s AND order_id=%s;
     """
 
     app_database_url = get_config().database.url
@@ -180,12 +180,12 @@ def update_return(user_id: str, current_product: str, order_id: str) -> str:
     with psycopg2.connect(**db_params) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Execute the SELECT query to verify the order details
-            cur.execute(SELECT_QUERY)
+            cur.execute(SELECT_QUERY, params)
             result = cur.fetchone()
 
             # If the order exists, update the return status
             if result:
-                cur.execute(UPDATE_QUERY)
+                cur.execute(UPDATE_QUERY, params)
                 conn.commit()  # Commit the transaction to apply the update
                 return f"Return status for order_id {order_id} has been updated to 'Requested'."
             else:
